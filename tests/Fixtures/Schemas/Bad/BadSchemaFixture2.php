@@ -20,7 +20,7 @@ class BadSchemaFixture2 extends BadSchemaFixture
     {
         return [
             'openapi' => [
-                'openapi format is invalid.',
+                'The openapi must be at least version 3.0.0.',
             ],
         ];
     }

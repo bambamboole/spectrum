@@ -2,12 +2,14 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Rules\Semver;
+
 readonly class OpenApiDocument extends OpenApiObject
 {
     public static function rules(): array
     {
         return [
-            'openapi' => ['required', 'string', 'regex:/^3\.[01]\.\d+$/'],
+            'openapi' => ['required', 'string', new Semver('3.0.0')],
             'paths' => ['present', 'array'],
             'security' => ['sometimes', 'array'],
             'externalDocs' => ['sometimes', 'array'],

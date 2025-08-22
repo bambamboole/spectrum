@@ -16,7 +16,7 @@ it('validates OpenAPI version format', function () {
         expect(false)->toBeTrue('Expected ParseException to be thrown');
     } catch (ParseException $e) {
         expect($e->getMessages())->toHaveKey('openapi')
-            ->and($e->getMessages()['openapi'])->toContain('openapi format is invalid.');
+            ->and($e->getMessages()['openapi'])->toContain('The openapi must be at least version 3.0.0.');
     }
 });
 
