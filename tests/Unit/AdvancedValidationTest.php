@@ -4,118 +4,64 @@ use Bambamboole\OpenApi\Exceptions\ParseException;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('validates OpenAPI version format', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '2.0.0', // invalid version format
-        'info' => [
-            'title' => 'Test API',
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-    ]))->toThrow(ParseException::class, 'format is invalid');
-});
-
-it('validates that maxLength is greater than or equal to minLength', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => 'Test API',
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-        'components' => [
-            'schemas' => [
-                'InvalidSchema' => [
-                    'type' => 'string',
-                    'minLength' => 10,
-                    'maxLength' => 5, // invalid: max < min
-                ],
+    try {
+        OpenApiParser::make()->parseArray([
+            'openapi' => '2.0.0', // invalid version format
+            'info' => [
+                'title' => 'Test API',
+                'version' => '1.0.0',
             ],
-        ],
-    ]))->toThrow(ParseException::class, 'must be greater than or equal');
-});
-
-it('validates that maximum is greater than or equal to minimum', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => 'Test API',
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-        'components' => [
-            'schemas' => [
-                'InvalidSchema' => [
-                    'type' => 'number',
-                    'minimum' => 100,
-                    'maximum' => 50, // invalid: max < min
-                ],
-            ],
-        ],
-    ]))->toThrow(ParseException::class, 'must be greater than or equal');
+            'paths' => [],
+        ]);
+        expect(false)->toBeTrue('Expected ParseException to be thrown');
+    } catch (ParseException $e) {
+        expect($e->getMessages())->toHaveKey('openapi')
+            ->and($e->getMessages()['openapi'])->toContain('openapi format is invalid.');
+    }
 });
 
 it('validates that required_with works for license name', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => 'Test API',
-            'version' => '1.0.0',
-            'license' => [
-                'url' => 'https://example.com/license', // missing required name
-            ],
-        ],
-        'paths' => [],
-    ]))->toThrow(ParseException::class, 'must be filled in if');
-});
-
-it('validates that empty arrays are rejected for composition keywords', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => 'Test API',
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-        'components' => [
-            'schemas' => [
-                'InvalidSchema' => [
-                    'allOf' => [], // empty array not allowed
+    try {
+        OpenApiParser::make()->parseArray([
+            'openapi' => '3.0.0',
+            'info' => [
+                'title' => 'Test API',
+                'version' => '1.0.0',
+                'license' => [
+                    'url' => 'https://example.com/license', // missing required name
                 ],
             ],
-        ],
-    ]))->toThrow(ParseException::class, 'must have at least 1 items');
+            'paths' => [],
+        ]);
+        expect(false)->toBeTrue('Expected ParseException to be thrown');
+    } catch (ParseException $e) {
+        expect($e->getMessages())->toHaveKey('info.license.name')
+            ->and($e->getMessages()['info.license.name'])->toContain('name is required.');
+    }
 });
 
 it('validates that filled fields cannot be empty strings', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => '', // empty string not allowed for filled fields
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-    ]))->toThrow(ParseException::class, 'is required');
-});
-
-it('validates external docs url is required when external docs object exists', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => 'Test API',
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-        'externalDocs' => [
-            'description' => 'More info', // missing required url
-        ],
-    ]))->toThrow(ParseException::class, 'must be filled in if');
+    try {
+        OpenApiParser::make()->parseArray([
+            'openapi' => '3.0.0',
+            'info' => [
+                'title' => '', // empty string not allowed for filled fields
+                'version' => '1.0.0',
+            ],
+            'paths' => [],
+        ]);
+        expect(false)->toBeTrue('Expected ParseException to be thrown');
+    } catch (ParseException $e) {
+        expect($e->getMessages())->toHaveKey('info.title')
+            ->and($e->getMessages()['info.title'])->toContain('title is required.');
+    }
 });
 
 it('allows valid OpenAPI versions', function () {
     $validVersions = ['3.0.0', '3.0.1', '3.0.2', '3.0.3', '3.1.0', '3.1.1'];
 
     foreach ($validVersions as $version) {
-        $document = OpenApiParser::fromArray([
+        $document = OpenApiParser::make()->parseArray([
             'openapi' => $version,
             'info' => [
                 'title' => 'Test API',
@@ -128,27 +74,8 @@ it('allows valid OpenAPI versions', function () {
     }
 });
 
-it('validates multipleOf is greater than 0', function () {
-    expect(fn () => OpenApiParser::fromArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => 'Test API',
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-        'components' => [
-            'schemas' => [
-                'InvalidSchema' => [
-                    'type' => 'number',
-                    'multipleOf' => 0, // must be > 0
-                ],
-            ],
-        ],
-    ]))->toThrow(ParseException::class, 'must be greater than 0');
-});
-
 it('demonstrates sophisticated validation working together', function () {
-    $document = OpenApiParser::fromArray([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Valid API',

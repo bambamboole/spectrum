@@ -5,10 +5,22 @@ namespace Bambamboole\OpenApi;
 use Bambamboole\OpenApi\Exceptions\ParseException;
 use Bambamboole\OpenApi\Objects\Components;
 use Bambamboole\OpenApi\Objects\Contact;
+use Bambamboole\OpenApi\Objects\ExternalDocs;
 use Bambamboole\OpenApi\Objects\Info;
 use Bambamboole\OpenApi\Objects\License;
+use Bambamboole\OpenApi\Objects\OpenApiDocument;
+use Bambamboole\OpenApi\Objects\OpenApiObject;
 use Bambamboole\OpenApi\Objects\Schema;
+use Bambamboole\OpenApi\Objects\Server;
+use Bambamboole\OpenApi\Objects\Tag;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactory;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Translation\FileLoader;
+use Illuminate\Translation\Translator;
+use Illuminate\Validation\Factory;
+
+use function collect;
 
 class OpenApiObjectFactory
 {
@@ -16,69 +28,61 @@ class OpenApiObjectFactory
         protected readonly ValidatorFactory $validator,
     ) {}
 
+    public static function make(): self
+    {
+        $loader = new FileLoader(new Filesystem, dirname(__DIR__).'/lang');
+        $translator = new Translator($loader, 'en');
+        $validatorFactory = new Factory($translator, new Container);
+
+        return new self($validatorFactory);
+    }
+
     public function createDocument(array $data): OpenApiDocument
     {
-        $this->validateDocument($data);
+        $validator = $this->validator->make($data, OpenApiDocument::rules(), OpenApiDocument::messages());
+        if ($validator->fails()) {
+            throw ParseException::withMessages($validator->errors()->toArray());
+        }
+
+        $info = $this->createInfo($data['info'], 'info');
+        $components = $this->createComponents($data['components'] ?? []);
+
+        $servers = collect($data['servers'] ?? [])->map(fn ($server, $i) => $this->createServer($server, "servers.{$i}"))->all();
+        $tags = collect($data['tags'] ?? [])->map(fn ($tag, $i) => $this->createTag($tag, "tags.{$i}"))->all();
+        $externalDocs = isset($data['externalDocs']) ? $this->createExternalDocs($data['externalDocs']) : null;
 
         return new OpenApiDocument(
             openapi: $data['openapi'],
-            info: $this->createInfo($data['info']),
+            info: $info,
             paths: $data['paths'],
-            components: $this->createComponents($data['components'] ?? []),
+            components: $components,
             security: $data['security'] ?? [],
-            tags: $data['tags'] ?? [],
-            servers: $data['servers'] ?? [],
-            externalDocs: $data['externalDocs'] ?? null,
+            tags: $tags,
+            servers: $servers,
+            externalDocs: $externalDocs,
         );
     }
 
-    public function createInfo(array $data): Info
+    public function createInfo(array $data, string $keyPrefix = ''): Info
     {
-        // Validation for direct usage with sophisticated rules
-        $validator = $this->validator->make($data, [
-            'title' => ['required', 'string', 'filled'],
-            'version' => ['required', 'string', 'filled'],
-            'description' => ['sometimes', 'string', 'filled'],
-            'termsOfService' => ['sometimes', 'url'],
-            'contact' => ['sometimes', 'array'],
-            'license' => ['sometimes', 'array'],
+        $this->validate($data, Info::class, $keyPrefix);
 
-            // Nested validation for contact
-            'contact.name' => ['sometimes', 'string', 'filled'],
-            'contact.email' => ['sometimes', 'email'],
-            'contact.url' => ['sometimes', 'url'],
-
-            // Nested validation for license
-            'license.name' => ['required_with:license', 'string', 'filled'],
-            'license.url' => ['sometimes', 'url'],
-        ]);
-
-        if ($validator->fails()) {
-            throw new ParseException('Info validation failed: '.$validator->errors()->first());
-        }
+        $contact = isset($data['contact']) ? $this->createContact($data['contact'], $keyPrefix.'.contact') : null;
+        $license = isset($data['license']) ? $this->createLicense($data['license'], $keyPrefix.'.license') : null;
 
         return new Info(
             title: $data['title'],
             version: $data['version'],
             description: $data['description'] ?? null,
             termsOfService: $data['termsOfService'] ?? null,
-            contact: isset($data['contact']) ? $this->createContact($data['contact']) : null,
-            license: isset($data['license']) ? $this->createLicense($data['license']) : null,
+            contact: $contact,
+            license: $license,
         );
     }
 
-    public function createContact(array $data): Contact
+    public function createContact(array $data, string $keyPrefix = ''): Contact
     {
-        // Validation for direct usage
-        $validator = $this->validator->make($data, [
-            'name' => ['sometimes', 'string', 'filled'],
-            'email' => ['sometimes', 'email'],
-            'url' => ['sometimes', 'url'],
-        ]);
-
-        if ($validator->fails()) {
-            throw new ParseException('Contact validation failed: '.$validator->errors()->first());
-        }
+        $this->validate($data, Contact::class, $keyPrefix);
 
         return new Contact(
             name: $data['name'] ?? null,
@@ -87,17 +91,9 @@ class OpenApiObjectFactory
         );
     }
 
-    public function createLicense(array $data): License
+    public function createLicense(array $data, string $keyPrefix = ''): License
     {
-        // License requires name if present
-        $validator = $this->validator->make($data, [
-            'name' => ['required', 'string', 'filled'],
-            'url' => ['sometimes', 'url'],
-        ]);
-
-        if ($validator->fails()) {
-            throw new ParseException('License validation failed: '.$validator->errors()->first());
-        }
+        $this->validate($data, License::class, $keyPrefix);
 
         return new License(
             name: $data['name'],
@@ -151,7 +147,7 @@ class OpenApiObjectFactory
         ]);
 
         if ($validator->fails()) {
-            throw new ParseException('Schema validation failed: '.$validator->errors()->first());
+            throw ParseException::withMessages($validator->errors()->toArray());
         }
 
         return new Schema(
@@ -202,68 +198,40 @@ class OpenApiObjectFactory
         );
     }
 
-    private function validateDocument(array $data): void
+    public function createServer(array $data, string $keyPrefix = ''): Server
     {
-        $validator = $this->validator->make($data, [
-            // Root level - OpenAPI spec requirements
-            'openapi' => ['required', 'string', 'regex:/^3\.[01]\.\d+$/'],
-            'info' => ['required', 'array', 'bail'],
-            'paths' => ['present', 'array'],
-            'components' => ['sometimes', 'array'],
-            'security' => ['sometimes', 'array'],
-            'tags' => ['sometimes', 'array'],
-            'servers' => ['sometimes', 'array'],
-            'externalDocs' => ['sometimes', 'array'],
+        $this->validate($data, Server::class, $keyPrefix);
 
-            // Info object validation
-            'info.title' => ['required', 'string', 'filled'],
-            'info.version' => ['required', 'string', 'filled'],
-            'info.description' => ['sometimes', 'string', 'filled'],
-            'info.termsOfService' => ['sometimes', 'url'],
-            'info.contact' => ['sometimes', 'array'],
-            'info.license' => ['sometimes', 'array'],
+        return new Server(
+            url: $data['url'],
+            description: $data['description'] ?? null,
+            variables: $data['variables'] ?? null,
+        );
+    }
 
-            // Contact object (conditional validation)
-            'info.contact.name' => ['sometimes', 'string', 'filled'],
-            'info.contact.email' => ['sometimes', 'email'],
-            'info.contact.url' => ['sometimes', 'url'],
+    public function createExternalDocs(array $data, string $keyPrefix = ''): ExternalDocs
+    {
+        $this->validate($data, ExternalDocs::class, $keyPrefix);
 
-            // License object (name required if license present)
-            'info.license.name' => ['required_with:info.license', 'string', 'filled'],
-            'info.license.url' => ['sometimes', 'url'],
+        return new ExternalDocs(
+            url: $data['url'],
+            description: $data['description'] ?? null,
+        );
+    }
 
-            // Components validation (only if components section exists)
-            'components.schemas' => ['sometimes', 'array'],
-            'components.responses' => ['sometimes', 'array'],
-            'components.parameters' => ['sometimes', 'array'],
-            'components.examples' => ['sometimes', 'array'],
-            'components.requestBodies' => ['sometimes', 'array'],
-            'components.headers' => ['sometimes', 'array'],
-            'components.securitySchemes' => ['sometimes', 'array'],
-            'components.links' => ['sometimes', 'array'],
-            'components.callbacks' => ['sometimes', 'array'],
+    public function createTag(array $data, string $keyPrefix = ''): Tag
+    {
+        $this->validate($data, Tag::class, $keyPrefix);
 
-            // External docs validation
-            'externalDocs.description' => ['sometimes', 'string', 'filled'],
-            'externalDocs.url' => ['required_with:externalDocs', 'url'],
+        $externalDocs = isset($data['externalDocs'])
+            ? $this->createExternalDocs($data['externalDocs'], $keyPrefix)
+            : null;
 
-            // Servers validation
-            'servers.*.url' => ['sometimes', 'string', 'filled'],
-            'servers.*.description' => ['sometimes', 'string'],
-
-            // Security validation
-            'security.*' => ['sometimes', 'array'],
-
-            // Tags validation
-            'tags.*.name' => ['sometimes', 'string', 'filled'],
-            'tags.*.description' => ['sometimes', 'string'],
-            'tags.*.externalDocs' => ['sometimes', 'array'],
-        ]);
-
-        if ($validator->fails()) {
-            $errors = $validator->errors()->all();
-            throw new ParseException('Document validation failed: '.implode('; ', $errors));
-        }
+        return new Tag(
+            name: $data['name'],
+            description: $data['description'] ?? null,
+            externalDocs: $externalDocs,
+        );
     }
 
     private function createSchemas(array $schemas): array
@@ -314,5 +282,22 @@ class OpenApiObjectFactory
         }
 
         return array_map(fn ($schema) => $this->createSchema($schema), $schemas);
+    }
+
+    protected function validate(array $data, string $objectName, string $keyPrefix = ''): void
+    {
+        if (! class_exists($objectName) || ! is_subclass_of($objectName, OpenApiObject::class)) {
+            throw new \InvalidArgumentException("Class {$objectName} does not implement ".OpenApiObject::class);
+        }
+        $validator = $this->validator->make($data, $objectName::rules(), $objectName::messages());
+
+        if ($validator->fails()) {
+            $prefix = empty($keyPrefix) ? '' : "{$keyPrefix}.";
+            $messages = collect($validator->errors()->toArray())
+                ->mapWithKeys(fn ($errors, $field) => ["{$prefix}{$field}" => $errors])
+                ->toArray();
+
+            throw ParseException::withMessages($messages);
+        }
     }
 }

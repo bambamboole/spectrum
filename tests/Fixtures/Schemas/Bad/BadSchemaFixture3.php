@@ -28,7 +28,9 @@ class BadSchemaFixture3 extends BadSchemaFixture
     public function violations(): array
     {
         return [
-            'maxLength must be greater than or equal to minLength',
+            'maxLength' => [
+                'The max length must be greater than or equal 10.',
+            ],
         ];
     }
 }

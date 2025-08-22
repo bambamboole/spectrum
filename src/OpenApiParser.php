@@ -3,11 +3,9 @@
 namespace Bambamboole\OpenApi;
 
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Illuminate\Container\Container;
+use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
-use Illuminate\Translation\FileLoader;
-use Illuminate\Translation\Translator;
 use InvalidArgumentException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -23,11 +21,7 @@ class OpenApiParser
     public static function make(): self
     {
         if (! self::$instance) {
-            $loader = new FileLoader($fs = new Filesystem, dirname(__DIR__).'/lang');
-            $translator = new Translator($loader, 'en');
-            $validatorFactory = new \Illuminate\Validation\Factory($translator, new Container);
-            $objectFactory = new OpenApiObjectFactory($validatorFactory);
-            self::$instance = new self($fs, $objectFactory);
+            self::$instance = new self(new Filesystem, OpenApiObjectFactory::make());
         }
 
         return self::$instance;
@@ -61,21 +55,5 @@ class OpenApiParser
     public function parseArray(array $data): OpenApiDocument
     {
         return $this->factory->createDocument($data);
-    }
-
-    // Static convenience methods for backward compatibility
-    public static function fromJson(string $json): OpenApiDocument
-    {
-        return self::make()->parseJson($json);
-    }
-
-    public static function fromFile(string $filePath): OpenApiDocument
-    {
-        return self::make()->parseFile($filePath);
-    }
-
-    public static function fromArray(array $data): OpenApiDocument
-    {
-        return self::make()->parseArray($data);
     }
 }

@@ -33,9 +33,15 @@ it('validates Info object via Laravel validator', function () {
     $factoryProperty->setAccessible(true);
     $objectFactory = $factoryProperty->getValue($parser);
 
-    expect(fn () => $objectFactory->createInfo([
-        'version' => '1.0.0', // missing title
-    ]))->toThrow(ParseException::class, 'Info validation failed');
+    try {
+        $objectFactory->createInfo([
+            'version' => '1.0.0', // missing title
+        ]);
+        expect(false)->toBeTrue('Expected ParseException to be thrown');
+    } catch (ParseException $e) {
+        expect($e->getMessages())->toHaveKey('title')
+            ->and($e->getMessages()['title'])->toContain('title is required.');
+    }
 });
 
 it('validates Contact email via Laravel validator', function () {
@@ -45,9 +51,15 @@ it('validates Contact email via Laravel validator', function () {
     $factoryProperty->setAccessible(true);
     $objectFactory = $factoryProperty->getValue($parser);
 
-    expect(fn () => $objectFactory->createContact([
-        'email' => 'invalid-email', // invalid email format
-    ]))->toThrow(ParseException::class, 'Contact validation failed');
+    try {
+        $objectFactory->createContact([
+            'email' => 'invalid-email', // invalid email format
+        ]);
+        expect(false)->toBeTrue('Expected ParseException to be thrown');
+    } catch (ParseException $e) {
+        expect($e->getMessages())->toHaveKey('email')
+            ->and($e->getMessages()['email'])->toContain('email must be a valid email address.');
+    }
 });
 
 it('validates Schema constraints via Laravel validator', function () {
@@ -57,14 +69,20 @@ it('validates Schema constraints via Laravel validator', function () {
     $factoryProperty->setAccessible(true);
     $objectFactory = $factoryProperty->getValue($parser);
 
-    expect(fn () => $objectFactory->createSchema([
-        'type' => 'string',
-        'minLength' => -1, // invalid constraint
-    ]))->toThrow(ParseException::class, 'Schema validation failed');
+    try {
+        $objectFactory->createSchema([
+            'type' => 'string',
+            'minLength' => -1, // invalid constraint
+        ]);
+        expect(false)->toBeTrue('Expected ParseException to be thrown');
+    } catch (ParseException $e) {
+        expect($e->getMessages())->toHaveKey('minLength')
+            ->and($e->getMessages()['minLength'])->toContain('The min length must be at least 0.');
+    }
 });
 
 it('can create complex OpenAPI document via factory', function () {
-    $document = OpenApiParser::fromArray([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Factory Test API',

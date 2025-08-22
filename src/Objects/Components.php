@@ -2,8 +2,23 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-readonly class Components
+readonly class Components extends OpenApiObject
 {
+    public static function rules(): array
+    {
+        return [
+            'schemas' => ['sometimes', 'array'],
+            'responses' => ['sometimes', 'array'],
+            'parameters' => ['sometimes', 'array'],
+            'examples' => ['sometimes', 'array'],
+            'requestBodies' => ['sometimes', 'array'],
+            'headers' => ['sometimes', 'array'],
+            'securitySchemes' => ['sometimes', 'array'],
+            'links' => ['sometimes', 'array'],
+            'callbacks' => ['sometimes', 'array'],
+        ];
+    }
+
     public function __construct(
         public array $schemas = [],
         public array $responses = [],
@@ -15,29 +30,4 @@ readonly class Components
         public array $links = [],
         public array $callbacks = [],
     ) {}
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            schemas: self::parseSchemas($data['schemas'] ?? []),
-            responses: $data['responses'] ?? [],
-            parameters: $data['parameters'] ?? [],
-            examples: $data['examples'] ?? [],
-            requestBodies: $data['requestBodies'] ?? [],
-            headers: $data['headers'] ?? [],
-            securitySchemes: $data['securitySchemes'] ?? [],
-            links: $data['links'] ?? [],
-            callbacks: $data['callbacks'] ?? [],
-        );
-    }
-
-    private static function parseSchemas(array $schemas): array
-    {
-        $parsed = [];
-        foreach ($schemas as $key => $schema) {
-            $parsed[$key] = Schema::fromArray($schema);
-        }
-
-        return $parsed;
-    }
 }

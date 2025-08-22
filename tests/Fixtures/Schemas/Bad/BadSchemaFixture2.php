@@ -19,7 +19,9 @@ class BadSchemaFixture2 extends BadSchemaFixture
     public function violations(): array
     {
         return [
-            'openapi format is invalid',
+            'openapi' => [
+                'openapi format is invalid.',
+            ],
         ];
     }
 }

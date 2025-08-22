@@ -1,0 +1,27 @@
+<?php declare(strict_types=1);
+
+namespace Bambamboole\OpenApi\Objects;
+
+readonly class OpenApiDocument extends OpenApiObject
+{
+    public static function rules(): array
+    {
+        return [
+            'openapi' => ['required', 'string', 'regex:/^3\.[01]\.\d+$/'],
+            'paths' => ['present', 'array'],
+            'security' => ['sometimes', 'array'],
+            'externalDocs' => ['sometimes', 'array'],
+        ];
+    }
+
+    public function __construct(
+        public string $openapi,
+        public Info $info,
+        public array $paths,
+        public Components $components,
+        public array $security = [],
+        public array $tags = [],
+        public array $servers = [],
+        public ?ExternalDocs $externalDocs = null,
+    ) {}
+}

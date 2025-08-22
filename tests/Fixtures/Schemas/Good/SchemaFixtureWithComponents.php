@@ -2,7 +2,7 @@
 
 namespace Bambamboole\OpenApi\Tests\Fixtures\Schemas\Good;
 
-class GoodSchemaFixture3 extends GoodSchemaFixture
+class SchemaFixtureWithComponents extends AbstractGoodSchemaFixture
 {
     public function schema(): array
     {

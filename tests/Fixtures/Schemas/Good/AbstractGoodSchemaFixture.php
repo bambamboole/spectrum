@@ -3,7 +3,7 @@ namespace Bambamboole\OpenApi\Tests\Fixtures\Schemas\Good;
 
 use Bambamboole\OpenApi\Tests\Fixtures\Schemas\SchemaFixtureInterface;
 
-abstract class GoodSchemaFixture implements SchemaFixtureInterface
+abstract class AbstractGoodSchemaFixture implements SchemaFixtureInterface
 {
     public function passes(): bool
     {
@@ -26,7 +26,7 @@ abstract class GoodSchemaFixture implements SchemaFixtureInterface
     {
         $fixtures = [];
         foreach (glob(__DIR__.'/*.php') as $file) {
-            if (str_ends_with($file, 'GoodSchemaFixture.php')) {
+            if (str_ends_with($file, 'AbstractGoodSchemaFixture.php')) {
                 continue;
             }
             $className = basename($file, '.php');

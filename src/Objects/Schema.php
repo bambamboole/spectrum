@@ -2,10 +2,53 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\Exceptions\ParseException;
-
-readonly class Schema
+readonly class Schema extends OpenApiObject
 {
+    public static function rules(): array
+    {
+        return [
+            'type' => ['sometimes', 'string', 'in:string,number,integer,boolean,array,object,null'],
+            'format' => ['sometimes', 'string', 'filled'],
+            'title' => ['sometimes', 'string', 'filled'],
+            'description' => ['sometimes', 'string', 'filled'],
+            '$ref' => ['sometimes', 'string', 'filled'],
+
+            // String constraints
+            'minLength' => ['sometimes', 'integer', 'min:0'],
+            'maxLength' => ['sometimes', 'integer', 'min:0', 'gte:minLength'],
+            'pattern' => ['sometimes', 'string', 'filled'],
+
+            // Numeric constraints
+            'minimum' => ['sometimes', 'numeric'],
+            'maximum' => ['sometimes', 'numeric', 'gte:minimum'],
+            'exclusiveMinimum' => ['sometimes', 'boolean'],
+            'exclusiveMaximum' => ['sometimes', 'boolean'],
+            'multipleOf' => ['sometimes', 'numeric', 'gt:0'],
+
+            // Array constraints
+            'minItems' => ['sometimes', 'integer', 'min:0'],
+            'maxItems' => ['sometimes', 'integer', 'min:0', 'gte:minItems'],
+            'uniqueItems' => ['sometimes', 'boolean'],
+            'items' => ['sometimes', 'array'],
+
+            // Object constraints
+            'minProperties' => ['sometimes', 'integer', 'min:0'],
+            'maxProperties' => ['sometimes', 'integer', 'min:0', 'gte:minProperties'],
+            'required' => ['sometimes', 'array'],
+            'properties' => ['sometimes', 'array'],
+            'additionalProperties' => ['sometimes'],
+
+            // Enumeration
+            'enum' => ['sometimes', 'array', 'min:1'],
+
+            // Composition keywords
+            'allOf' => ['sometimes', 'array', 'min:1'],
+            'anyOf' => ['sometimes', 'array', 'min:1'],
+            'oneOf' => ['sometimes', 'array', 'min:1'],
+            'not' => ['sometimes', 'array'],
+        ];
+    }
+
     public function __construct(
         public ?string $type = null,
         public ?string $format = null,
@@ -38,10 +81,8 @@ readonly class Schema
         public ?string $ref = null,
     ) {}
 
-    public static function fromArray(array $data): self
+    public static function create(array $data): self
     {
-        self::validateSchema($data);
-
         return new self(
             type: $data['type'] ?? null,
             format: $data['format'] ?? null,
@@ -60,96 +101,18 @@ readonly class Schema
             minItems: $data['minItems'] ?? null,
             maxItems: $data['maxItems'] ?? null,
             uniqueItems: $data['uniqueItems'] ?? null,
-            items: isset($data['items']) ? self::fromArray($data['items']) : null,
-            properties: self::parseProperties($data['properties'] ?? null),
+            items: null, // Will be set by ObjectFactory
+            properties: null, // Will be set by ObjectFactory
             required: $data['required'] ?? null,
-            additionalProperties: self::parseAdditionalProperties($data['additionalProperties'] ?? null),
+            additionalProperties: null, // Will be set by ObjectFactory
             minProperties: $data['minProperties'] ?? null,
             maxProperties: $data['maxProperties'] ?? null,
             enum: $data['enum'] ?? null,
-            allOf: self::parseSchemaArray($data['allOf'] ?? null),
-            anyOf: self::parseSchemaArray($data['anyOf'] ?? null),
-            oneOf: self::parseSchemaArray($data['oneOf'] ?? null),
-            not: isset($data['not']) ? self::fromArray($data['not']) : null,
+            allOf: null, // Will be set by ObjectFactory
+            anyOf: null, // Will be set by ObjectFactory
+            oneOf: null, // Will be set by ObjectFactory
+            not: null, // Will be set by ObjectFactory
             ref: $data['$ref'] ?? null,
         );
-    }
-
-    private static function validateSchema(array $data): void
-    {
-        // Validate type
-        if (isset($data['type'])) {
-            $validTypes = ['string', 'number', 'integer', 'boolean', 'array', 'object', 'null'];
-            if (! in_array($data['type'], $validTypes)) {
-                throw new ParseException("Invalid schema type: {$data['type']}");
-            }
-        }
-
-        // Validate string constraints
-        if (isset($data['minLength']) && $data['minLength'] < 0) {
-            throw new ParseException('minLength must be >= 0');
-        }
-
-        if (isset($data['maxLength']) && $data['maxLength'] < 0) {
-            throw new ParseException('maxLength must be >= 0');
-        }
-
-        // Validate array constraints
-        if (isset($data['minItems']) && $data['minItems'] < 0) {
-            throw new ParseException('minItems must be >= 0');
-        }
-
-        if (isset($data['maxItems']) && $data['maxItems'] < 0) {
-            throw new ParseException('maxItems must be >= 0');
-        }
-
-        // Validate object constraints
-        if (isset($data['minProperties']) && $data['minProperties'] < 0) {
-            throw new ParseException('minProperties must be >= 0');
-        }
-
-        if (isset($data['maxProperties']) && $data['maxProperties'] < 0) {
-            throw new ParseException('maxProperties must be >= 0');
-        }
-    }
-
-    private static function parseProperties(?array $properties): ?array
-    {
-        if ($properties === null) {
-            return null;
-        }
-
-        $parsed = [];
-        foreach ($properties as $key => $property) {
-            $parsed[$key] = self::fromArray($property);
-        }
-
-        return $parsed;
-    }
-
-    private static function parseAdditionalProperties(mixed $additionalProperties): bool|Schema|null
-    {
-        if ($additionalProperties === null) {
-            return null;
-        }
-
-        if (is_bool($additionalProperties)) {
-            return $additionalProperties;
-        }
-
-        if (is_array($additionalProperties)) {
-            return self::fromArray($additionalProperties);
-        }
-
-        return null;
-    }
-
-    private static function parseSchemaArray(?array $schemas): ?array
-    {
-        if ($schemas === null) {
-            return null;
-        }
-
-        return array_map(fn ($schema) => self::fromArray($schema), $schemas);
     }
 }
