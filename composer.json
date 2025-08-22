@@ -15,7 +15,9 @@
     }
   ],
   "require": {
-    "php": "^8.2"
+    "php": "^8.2",
+    "illuminate/validation": "^10.0 || ^11.0 || ^12.0",
+    "symfony/yaml": "^7.3"
   },
   "require-dev": {
     "laravel/pint": "^1.8",
@@ -35,18 +37,13 @@
   },
   "scripts": {
     "pint": "vendor/bin/pint",
-    "pest": "vendor/bin/pest",
+    "test": "vendor/bin/pest",
     "test:coverage": "vendor/bin/pest --coverage-html coverage",
     "test:ci": "vendor/bin/pest --coverage-clover coverage.xml",
     "phpstan:analyse": "vendor/bin/phpstan analyse --ansi --memory-limit=4G",
     "phpstan:baseline": "vendor/bin/phpstan analyse --generate-baseline --memory-limit=4G",
-    "rector": "vendor/bin/rector",
     "lint": [
-      "@php vendor/bin/pint",
-      "@php vendor/bin/rector"
-    ],
-    "test": [
-      "@php artisan package:test --parallel"
+      "@php vendor/bin/pint"
     ],
     "all": [
       "@lint",

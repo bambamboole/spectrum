@@ -1,0 +1,106 @@
+<?php declare(strict_types=1);
+
+use Bambamboole\OpenApi\Exceptions\ParseException;
+use Bambamboole\OpenApi\Objects\Components;
+use Bambamboole\OpenApi\Objects\Contact;
+use Bambamboole\OpenApi\Objects\Info;
+use Bambamboole\OpenApi\Objects\Schema;
+use Bambamboole\OpenApi\OpenApiParser;
+
+it('can create Info object via factory', function () {
+    $parser = OpenApiParser::make();
+    $factory = new \ReflectionClass($parser);
+    $factoryProperty = $factory->getProperty('factory');
+    $factoryProperty->setAccessible(true);
+    $objectFactory = $factoryProperty->getValue($parser);
+
+    $info = $objectFactory->createInfo([
+        'title' => 'Test API',
+        'version' => '1.0.0',
+        'description' => 'A test API',
+    ]);
+
+    expect($info)->toBeInstanceOf(Info::class)
+        ->and($info->title)->toBe('Test API')
+        ->and($info->version)->toBe('1.0.0')
+        ->and($info->description)->toBe('A test API');
+});
+
+it('validates Info object via Laravel validator', function () {
+    $parser = OpenApiParser::make();
+    $factory = new \ReflectionClass($parser);
+    $factoryProperty = $factory->getProperty('factory');
+    $factoryProperty->setAccessible(true);
+    $objectFactory = $factoryProperty->getValue($parser);
+
+    expect(fn () => $objectFactory->createInfo([
+        'version' => '1.0.0', // missing title
+    ]))->toThrow(ParseException::class, 'Info validation failed');
+});
+
+it('validates Contact email via Laravel validator', function () {
+    $parser = OpenApiParser::make();
+    $factory = new \ReflectionClass($parser);
+    $factoryProperty = $factory->getProperty('factory');
+    $factoryProperty->setAccessible(true);
+    $objectFactory = $factoryProperty->getValue($parser);
+
+    expect(fn () => $objectFactory->createContact([
+        'email' => 'invalid-email', // invalid email format
+    ]))->toThrow(ParseException::class, 'Contact validation failed');
+});
+
+it('validates Schema constraints via Laravel validator', function () {
+    $parser = OpenApiParser::make();
+    $factory = new \ReflectionClass($parser);
+    $factoryProperty = $factory->getProperty('factory');
+    $factoryProperty->setAccessible(true);
+    $objectFactory = $factoryProperty->getValue($parser);
+
+    expect(fn () => $objectFactory->createSchema([
+        'type' => 'string',
+        'minLength' => -1, // invalid constraint
+    ]))->toThrow(ParseException::class, 'Schema validation failed');
+});
+
+it('can create complex OpenAPI document via factory', function () {
+    $document = OpenApiParser::fromArray([
+        'openapi' => '3.0.0',
+        'info' => [
+            'title' => 'Factory Test API',
+            'version' => '2.0.0',
+            'contact' => [
+                'email' => 'test@example.com',
+                'url' => 'https://example.com',
+            ],
+        ],
+        'paths' => [],
+        'components' => [
+            'schemas' => [
+                'User' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'name' => [
+                            'type' => 'string',
+                            'minLength' => 1,
+                        ],
+                        'email' => [
+                            'type' => 'string',
+                            'format' => 'email',
+                        ],
+                    ],
+                    'required' => ['name', 'email'],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($document->info->title)->toBe('Factory Test API')
+        ->and($document->info->version)->toBe('2.0.0')
+        ->and($document->info->contact)->toBeInstanceOf(Contact::class)
+        ->and($document->info->contact->email)->toBe('test@example.com')
+        ->and($document->components)->toBeInstanceOf(Components::class)
+        ->and($document->components->schemas)->toHaveKey('User')
+        ->and($document->components->schemas['User'])->toBeInstanceOf(Schema::class)
+        ->and($document->components->schemas['User']->type)->toBe('object');
+});

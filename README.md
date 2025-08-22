@@ -1,4 +1,4 @@
-# Laravel Testing
+# PHP OpenAPI
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/bambamboole/php-openapi.svg?style=flat-square)](https://packagist.org/packages/bambamboole/php-openapi)
 [![Total Downloads](https://img.shields.io/packagist/dt/bambamboole/php-openapi.svg?style=flat-square)](https://packagist.org/packages/bambamboole/php-openapi)

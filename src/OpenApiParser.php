@@ -2,4 +2,80 @@
 
 namespace Bambamboole\OpenApi;
 
-class OpenApiParser {}
+use Bambamboole\OpenApi\Exceptions\ParseException;
+use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
+use Illuminate\Translation\FileLoader;
+use Illuminate\Translation\Translator;
+use InvalidArgumentException;
+use Symfony\Component\Yaml\Yaml;
+
+class OpenApiParser
+{
+    protected static ?self $instance = null;
+
+    public function __construct(
+        protected readonly Filesystem $fs,
+        protected readonly OpenApiObjectFactory $factory,
+    ) {}
+
+    public static function make(): self
+    {
+        if (! self::$instance) {
+            $loader = new FileLoader($fs = new Filesystem, dirname(__DIR__).'/lang');
+            $translator = new Translator($loader, 'en');
+            $validatorFactory = new \Illuminate\Validation\Factory($translator, new Container);
+            $objectFactory = new OpenApiObjectFactory($validatorFactory);
+            self::$instance = new self($fs, $objectFactory);
+        }
+
+        return self::$instance;
+    }
+
+    public function parseJson(string $json): OpenApiDocument
+    {
+        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+        return $this->parseArray($data);
+    }
+
+    public function parseYaml(string $yaml): OpenApiDocument
+    {
+        return $this->parseArray(Yaml::parse($yaml));
+    }
+
+    public function parseFile(string $filePath): OpenApiDocument
+    {
+        if (! $this->fs->exists($filePath)) {
+            throw new InvalidArgumentException("File not found: {$filePath}");
+        }
+
+        return match (Str::afterLast($filePath, '.')) {
+            'json' => $this->parseJson($this->fs->get($filePath)),
+            'yml', 'yaml' => $this->parseYaml($this->fs->get($filePath)),
+            default => throw new ParseException("Unsupported file type: {$filePath}"),
+        };
+    }
+
+    public function parseArray(array $data): OpenApiDocument
+    {
+        return $this->factory->createDocument($data);
+    }
+
+    // Static convenience methods for backward compatibility
+    public static function fromJson(string $json): OpenApiDocument
+    {
+        return self::make()->parseJson($json);
+    }
+
+    public static function fromFile(string $filePath): OpenApiDocument
+    {
+        return self::make()->parseFile($filePath);
+    }
+
+    public static function fromArray(array $data): OpenApiDocument
+    {
+        return self::make()->parseArray($data);
+    }
+}
