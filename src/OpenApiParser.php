@@ -3,6 +3,7 @@
 namespace Bambamboole\OpenApi;
 
 use Bambamboole\OpenApi\Exceptions\ParseException;
+use Bambamboole\OpenApi\Factories\OpenApiObjectFactory;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -21,7 +22,7 @@ class OpenApiParser
     public static function make(): self
     {
         if (! self::$instance) {
-            self::$instance = new self(new Filesystem, OpenApiObjectFactory::make());
+            self::$instance = new self(new Filesystem, OpenApiObjectFactory::create());
         }
 
         return self::$instance;

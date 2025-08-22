@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Bambamboole\OpenApi\Rules;
+namespace Bambamboole\OpenApi\Validation\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;

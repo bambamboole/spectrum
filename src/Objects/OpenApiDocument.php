@@ -2,7 +2,7 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\Rules\Semver;
+use Bambamboole\OpenApi\Validation\Rules\Semver;
 
 readonly class OpenApiDocument extends OpenApiObject
 {
@@ -11,8 +11,6 @@ readonly class OpenApiDocument extends OpenApiObject
         return [
             'openapi' => ['required', 'string', new Semver('3.0.0')],
             'paths' => ['present', 'array'],
-            'security' => ['sometimes', 'array'],
-            'externalDocs' => ['sometimes', 'array'],
         ];
     }
 
@@ -21,6 +19,7 @@ readonly class OpenApiDocument extends OpenApiObject
         public Info $info,
         public array $paths,
         public Components $components,
+        /** @var Security[] */
         public array $security = [],
         /** @var Tag[] */
         public array $tags = [],

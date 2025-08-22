@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Bambamboole\OpenApi;
+namespace Bambamboole\OpenApi\Factories;
 
 use Bambamboole\OpenApi\Exceptions\ParseException;
 use Bambamboole\OpenApi\Objects\Components;
@@ -9,48 +9,21 @@ use Bambamboole\OpenApi\Objects\ExternalDocs;
 use Bambamboole\OpenApi\Objects\Info;
 use Bambamboole\OpenApi\Objects\License;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Objects\OpenApiObject;
 use Bambamboole\OpenApi\Objects\Schema;
-use Bambamboole\OpenApi\Objects\SecurityScheme;
 use Bambamboole\OpenApi\Objects\Server;
 use Bambamboole\OpenApi\Objects\Tag;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Validation\Factory as ValidatorFactory;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Translation\FileLoader;
-use Illuminate\Translation\Translator;
-use Illuminate\Validation\Factory;
 
 use function collect;
 
-class OpenApiObjectFactory
+class OpenApiObjectFactory extends AbstractFactory
 {
-    public function __construct(
-        protected readonly ValidatorFactory $validator,
-    ) {}
-
-    public static function make(): self
-    {
-        $loader = new FileLoader(new Filesystem, dirname(__DIR__).'/lang');
-        $translator = new Translator($loader, 'en');
-        $validatorFactory = new Factory($translator, new Container);
-
-        return new self($validatorFactory);
-    }
-
     public function createDocument(array $data): OpenApiDocument
     {
-        $validator = $this->validator->make($data, OpenApiDocument::rules(), OpenApiDocument::messages());
-        if ($validator->fails()) {
-            throw ParseException::withMessages($validator->errors()->toArray());
-        }
+        $this->validate($data, OpenApiDocument::class);
 
+        $documentSecurity = OpenApiSecurityFactory::create()->validateAndCreateDocumentSecurity($data);
         $info = $this->createInfo($data['info'], 'info');
-        $components = $this->createComponents($data['components'] ?? []);
-
-        if (isset($data['security'])) {
-            $this->validateSecurity($data['security'], $components->securitySchemes);
-        }
+        $components = $this->createComponents($data['components'] ?? [], $documentSecurity->securitySchemes);
 
         $servers = collect($data['servers'] ?? [])->map(fn ($server, $i) => $this->createServer($server, "servers.{$i}"))->all();
         $tags = collect($data['tags'] ?? [])->map(fn ($tag, $i) => $this->createTag($tag, "tags.{$i}"))->all();
@@ -61,7 +34,7 @@ class OpenApiObjectFactory
             info: $info,
             paths: $data['paths'],
             components: $components,
-            security: $data['security'] ?? [],
+            security: $documentSecurity->security,
             tags: $tags,
             servers: $servers,
             externalDocs: $externalDocs,
@@ -188,12 +161,8 @@ class OpenApiObjectFactory
         );
     }
 
-    public function createComponents(array $data): Components
+    protected function createComponents(array $data, array $securitySchemes): Components
     {
-        $securitySchemes = collect($data['securitySchemes'] ?? [])
-            ->map(fn ($securityScheme, $key) => $this->createSecurityScheme($securityScheme, "components.securitySchemes.{$key}"))
-            ->all();
-
         return new Components(
             schemas: $this->createSchemas($data['schemas'] ?? []),
             responses: $data['responses'] ?? [],
@@ -240,22 +209,6 @@ class OpenApiObjectFactory
             name: $data['name'],
             description: $data['description'] ?? null,
             externalDocs: $externalDocs,
-        );
-    }
-
-    public function createSecurityScheme(array $data, string $keyPrefix = ''): SecurityScheme
-    {
-        $this->validate($data, SecurityScheme::class, $keyPrefix);
-
-        return new SecurityScheme(
-            type: $data['type'],
-            description: $data['description'] ?? null,
-            name: $data['name'] ?? null,
-            in: $data['in'] ?? null,
-            scheme: $data['scheme'] ?? null,
-            bearerFormat: $data['bearerFormat'] ?? null,
-            flows: $data['flows'] ?? null,
-            openIdConnectUrl: $data['openIdConnectUrl'] ?? null,
         );
     }
 
@@ -307,56 +260,5 @@ class OpenApiObjectFactory
         }
 
         return array_map(fn ($schema) => $this->createSchema($schema), $schemas);
-    }
-
-    protected function validate(array $data, string|array $objectNameOrRules, string $keyPrefix = ''): void
-    {
-        $rules = [];
-        $messages = [];
-        if (is_string($objectNameOrRules)) {
-            $objectName = $objectNameOrRules;
-            if (! class_exists($objectName) || ! is_subclass_of($objectName, OpenApiObject::class)) {
-                throw new \InvalidArgumentException("Class {$objectName} does not implement ".OpenApiObject::class);
-            }
-            $rules = $objectName::rules();
-            $messages = $objectName::messages();
-        }
-
-        $validator = $this->validator->make($data, $rules, $messages);
-
-        if ($validator->fails()) {
-            $prefix = empty($keyPrefix) ? '' : "{$keyPrefix}.";
-            $messages = collect($validator->errors()->toArray())
-                ->mapWithKeys(fn ($errors, $field) => ["{$prefix}{$field}" => $errors])
-                ->toArray();
-
-            throw ParseException::withMessages($messages);
-        }
-    }
-
-    private function validateSecurity(array $security, array $securitySchemes): void
-    {
-        $schemeNames = array_keys($securitySchemes);
-        $errors = [];
-
-        foreach ($security as $index => $securityRequirement) {
-            if (! is_array($securityRequirement)) {
-                $errors["security.{$index}"] = ['Security requirement must be an object.'];
-
-                continue;
-            }
-
-            foreach (array_keys($securityRequirement) as $schemeName) {
-                if (! in_array($schemeName, $schemeNames, true)) {
-                    $errors["security.{$index}.{$schemeName}"] = [
-                        "Security scheme '{$schemeName}' is not defined in components.securitySchemes.",
-                    ];
-                }
-            }
-        }
-
-        if (! empty($errors)) {
-            throw ParseException::withMessages($errors);
-        }
     }
 }
