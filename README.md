@@ -4,7 +4,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/bambamboole/php-openapi.svg?style=flat-square)](https://packagist.org/packages/bambamboole/php-openapi)
 ![GitHub Actions](https://github.com/bambamboole/php-openapi/actions/workflows/main.yml/badge.svg)
 
-This package provides a OpenAPI parser and validator implemented in PHP.
+This package provides a OpenAPI 3.1.1 parser and validator implemented in PHP.
 
 ## Installation
 
