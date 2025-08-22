@@ -1,0 +1,63 @@
+{
+  "name": "bambamboole/php-openapi",
+  "description": "A php package which provides an OpenAPI parser and validator",
+  "keywords": [
+    "openapi",
+    "validator"
+  ],
+  "homepage": "https://github.com/bambamboole/php-openapi",
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Manuel Christlieb",
+      "email": "manuel@christlieb.eu"
+    }
+  ],
+  "require": {
+    "php": "^8.2"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.8",
+    "pestphp/pest": "^3.7",
+    "phpstan/phpstan": "^2.1",
+    "pestphp/pest-plugin-type-coverage": "^3.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bambamboole\\OpenApi\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Bambamboole\\OpenApi\\Tests\\": "tests"
+    }
+  },
+  "scripts": {
+    "pint": "vendor/bin/pint",
+    "pest": "vendor/bin/pest",
+    "test:coverage": "vendor/bin/pest --coverage-html coverage",
+    "test:ci": "vendor/bin/pest --coverage-clover coverage.xml",
+    "phpstan:analyse": "vendor/bin/phpstan analyse --ansi --memory-limit=4G",
+    "phpstan:baseline": "vendor/bin/phpstan analyse --generate-baseline --memory-limit=4G",
+    "rector": "vendor/bin/rector",
+    "lint": [
+      "@php vendor/bin/pint",
+      "@php vendor/bin/rector"
+    ],
+    "test": [
+      "@php artisan package:test --parallel"
+    ],
+    "all": [
+      "@lint",
+      "@phpstan:analyse",
+      "@test"
+    ]
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
+}

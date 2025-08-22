@@ -1,0 +1,21 @@
+includes:
+
+parameters:
+
+    paths:
+        - src/
+
+    # Level 9 is the highest level
+    level: 5
+
+    checkModelProperties: true
+    checkOctaneCompatibility: true
+    reportUnmatchedIgnoredErrors: false
+    noUnnecessaryCollectionCall: true
+    checkNullables: true
+    treatPhpDocTypesAsCertain: false
+    noEnvCallsOutsideOfConfig: false
+
+    ignoreErrors:
+        - identifier: trait.unused
+#    excludePaths:
