@@ -15,9 +15,7 @@ This PHP package provides parsing and validation capabilities for OpenAPI specif
 Always declare strict types at the beginning of every PHP file:
 
 ```php
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 ```
 
 ### Self-Explanatory Code
@@ -161,3 +159,8 @@ When adding new features:
 3. Update relevant documentation
 4. Ensure all static analysis passes (PHPStan)
 5. Follow existing code patterns and naming conventions
+
+## Useful commands
+1. `composer test` - Run all tests
+2. `composer lint` - Fix all linting issues
+3. `composer phpstan:analyse` - Run static analysis
