@@ -22,7 +22,9 @@ readonly class OpenApiDocument extends OpenApiObject
         public array $paths,
         public Components $components,
         public array $security = [],
+        /** @var Tag[] */
         public array $tags = [],
+        /** @var Server[] */
         public array $servers = [],
         public ?ExternalDocs $externalDocs = null,
     ) {}

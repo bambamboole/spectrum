@@ -26,6 +26,7 @@ readonly class Components extends OpenApiObject
         public array $examples = [],
         public array $requestBodies = [],
         public array $headers = [],
+        /** @var SecurityScheme[] */
         public array $securitySchemes = [],
         public array $links = [],
         public array $callbacks = [],

@@ -2,12 +2,12 @@
 
 namespace Bambamboole\OpenApi\Tests\Fixtures\Schemas\Bad;
 
-class BadSchemaFixture2 extends BadSchemaFixture
+class MissingOpenApiVersionFixture extends BadSchemaFixture
 {
     public function schema(): array
     {
         return [
-            'openapi' => '2.0.0', // Invalid version format
+            // Missing 'openapi' field
             'info' => [
                 'title' => 'Test API',
                 'version' => '1.0.0',
@@ -20,7 +20,7 @@ class BadSchemaFixture2 extends BadSchemaFixture
     {
         return [
             'openapi' => [
-                'The openapi must be at least version 3.0.0.',
+                'openapi is required.',
             ],
         ];
     }

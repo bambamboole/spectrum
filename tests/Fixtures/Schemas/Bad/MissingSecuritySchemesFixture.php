@@ -2,7 +2,7 @@
 
 namespace Bambamboole\OpenApi\Tests\Fixtures\Schemas\Bad;
 
-class BadSchemaFixture3 extends BadSchemaFixture
+class MissingSecuritySchemesFixture extends BadSchemaFixture
 {
     public function schema(): array
     {
@@ -13,14 +13,9 @@ class BadSchemaFixture3 extends BadSchemaFixture
                 'version' => '1.0.0',
             ],
             'paths' => [],
-            'components' => [
-                'schemas' => [
-                    'InvalidSchema' => [
-                        'type' => 'string',
-                        'minLength' => 10,
-                        'maxLength' => 5, // maxLength < minLength (invalid)
-                    ],
-                ],
+            // No components.securitySchemes defined
+            'security' => [
+                ['ApiKeyAuth' => []], // References non-existent security scheme
             ],
         ];
     }
@@ -28,8 +23,8 @@ class BadSchemaFixture3 extends BadSchemaFixture
     public function violations(): array
     {
         return [
-            'maxLength' => [
-                'The max length must be greater than or equal 10.',
+            'security.0.ApiKeyAuth' => [
+                "Security scheme 'ApiKeyAuth' is not defined in components.securitySchemes.",
             ],
         ];
     }
