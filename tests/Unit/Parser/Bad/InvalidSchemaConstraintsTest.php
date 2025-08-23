@@ -20,8 +20,8 @@ it('rejects schema with invalid constraints', function () {
             ],
         ],
     ])->toThrow(function (ParseException $e) {
-        expect($e->getMessages())->toMatchArray([
-            'maxLength' => [
+        expect($e->getMessages())->toBe([
+            'components.schemas.InvalidSchema.maxLength' => [
                 'The max length must be greater than or equal 10.',
             ],
         ]);

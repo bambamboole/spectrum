@@ -1,0 +1,130 @@
+<?php declare(strict_types=1);
+
+namespace Bambamboole\OpenApi\Factories;
+
+use Bambamboole\OpenApi\Context\ParsingContext;
+use Bambamboole\OpenApi\Factories\Concerns\ValidatesOpenApiObjects;
+use Bambamboole\OpenApi\Objects\Components;
+use Bambamboole\OpenApi\Objects\Schema;
+
+class ComponentsFactory
+{
+    use ValidatesOpenApiObjects;
+
+    public function __construct(ParsingContext $context)
+    {
+        $this->context = $context;
+    }
+
+    public static function create(ParsingContext $context): self
+    {
+        return new self($context);
+    }
+
+    public function createComponents(array $data, array $securitySchemes): Components
+    {
+        return new Components(
+            schemas: $this->createSchemaArray($data['schemas'] ?? [], 'components.schemas'),
+            responses: $data['responses'] ?? [],
+            parameters: $data['parameters'] ?? [],
+            examples: $data['examples'] ?? [],
+            requestBodies: $data['requestBodies'] ?? [],
+            headers: $data['headers'] ?? [],
+            securitySchemes: $securitySchemes,
+            links: $data['links'] ?? [],
+            callbacks: $data['callbacks'] ?? [],
+        );
+    }
+
+    public function createSchema(array $data, string $keyPrefix = ''): Schema
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            // If the resolved data also has a $ref, that's a problem with the schema design
+            // The resolver should have already resolved it completely
+            if (is_array($resolvedData)) {
+                return $this->createSchema($resolvedData, $keyPrefix);
+            }
+            // If it's not an array, something went wrong
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        // Advanced schema validation with conditional rules
+        $this->validate($data, Schema::class, $keyPrefix);
+
+        return new Schema(
+            type: $data['type'] ?? null,
+            format: $data['format'] ?? null,
+            title: $data['title'] ?? null,
+            description: $data['description'] ?? null,
+            default: $data['default'] ?? null,
+            example: $data['example'] ?? null,
+            minLength: $data['minLength'] ?? null,
+            maxLength: $data['maxLength'] ?? null,
+            pattern: $data['pattern'] ?? null,
+            minimum: $data['minimum'] ?? null,
+            maximum: $data['maximum'] ?? null,
+            exclusiveMinimum: $data['exclusiveMinimum'] ?? null,
+            exclusiveMaximum: $data['exclusiveMaximum'] ?? null,
+            multipleOf: $data['multipleOf'] ?? null,
+            minItems: $data['minItems'] ?? null,
+            maxItems: $data['maxItems'] ?? null,
+            uniqueItems: $data['uniqueItems'] ?? null,
+            items: isset($data['items']) ? $this->createSchema($data['items']) : null,
+            properties: $this->createSchemaProperties($data['properties'] ?? null),
+            required: $data['required'] ?? null,
+            additionalProperties: $this->createAdditionalProperties($data['additionalProperties'] ?? null),
+            minProperties: $data['minProperties'] ?? null,
+            maxProperties: $data['maxProperties'] ?? null,
+            enum: $data['enum'] ?? null,
+            allOf: $this->createSchemaArray($data['allOf'] ?? null),
+            anyOf: $this->createSchemaArray($data['anyOf'] ?? null),
+            oneOf: $this->createSchemaArray($data['oneOf'] ?? null),
+            not: isset($data['not']) ? $this->createSchema($data['not']) : null,
+            ref: $data['$ref'] ?? null,
+        );
+    }
+
+    private function createSchemaProperties(?array $properties): ?array
+    {
+        if ($properties === null) {
+            return null;
+        }
+
+        $parsed = [];
+        foreach ($properties as $key => $property) {
+            $parsed[$key] = $this->createSchema($property);
+        }
+
+        return $parsed;
+    }
+
+    private function createAdditionalProperties(mixed $additionalProperties): bool|Schema|null
+    {
+        if ($additionalProperties === null) {
+            return null;
+        }
+
+        if (is_bool($additionalProperties)) {
+            return $additionalProperties;
+        }
+
+        if (is_array($additionalProperties)) {
+            return $this->createSchema($additionalProperties);
+        }
+
+        return null;
+    }
+
+    private function createSchemaArray(?array $schemas, string $keyPrefix = ''): ?array
+    {
+        if ($schemas === null) {
+            return null;
+        }
+
+        return collect($schemas)
+            ->map(fn ($schema, $key) => $this->createSchema($schema, $keyPrefix.".{$key}"))
+            ->all();
+    }
+}

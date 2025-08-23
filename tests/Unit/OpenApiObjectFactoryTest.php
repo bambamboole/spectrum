@@ -2,6 +2,7 @@
 
 use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
+use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Factories\OpenApiDocumentFactory;
 use Bambamboole\OpenApi\Objects\Components;
 use Bambamboole\OpenApi\Objects\Contact;
@@ -72,15 +73,10 @@ it('validates Contact email via Laravel validator', function () {
 
 it('validates Schema constraints via Laravel validator', function () {
     $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = new OpenApiDocumentFactory($context);
-
-    // Use reflection to access the private createSchema method
-    $reflection = new \ReflectionClass($factory);
-    $createSchemaMethod = $reflection->getMethod('createSchema');
-    $createSchemaMethod->setAccessible(true);
+    $factory = ComponentsFactory::create($context);
 
     try {
-        $createSchemaMethod->invoke($factory, [
+        $factory->createSchema([
             'type' => 'string',
             'minLength' => -1, // invalid constraint
         ]);
