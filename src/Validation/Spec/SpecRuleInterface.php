@@ -7,7 +7,7 @@ use Bambamboole\OpenApi\Objects\OpenApiDocument;
 interface SpecRuleInterface
 {
     /**
-     * @param  \Closure(string,string,?ValidationSeverity):bool  $fail
+     * @param  \Closure(string,string): ValidationError  $fail
      */
     public function validate(OpenApiDocument $document, \Closure $fail): void;
 }

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Bambamboole\OpenApi\Validation;
 
 use Bambamboole\OpenApi\Exceptions\ParseException;
@@ -9,6 +10,7 @@ use Bambamboole\OpenApi\Validation\Spec\ValidationSeverity;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
@@ -46,14 +48,28 @@ class Validator
     {
         $errors = [];
         foreach (Arr::wrap($rules) as $config) {
-            /** @var RuleConfig $config */
-            $rule = new $config->ruleClass;
+            if ($config instanceof RuleConfig) {
+                $rule = new $config->ruleClass;
+                $defaultSeverity = $config->severity;
+            } else {
+                $rule = new $config;
+                $defaultSeverity = ValidationSeverity::ERROR;
+            }
 
-            $rule->validate($document, function ($message, $key, ?ValidationSeverity $severity = null) use (&$errors, $config) {
-                return $errors[] = new ValidationError($message, $key, $severity ?? $config->severity);
-            });
+            $failCallback = function (string $message, string $path, ?ValidationSeverity $severity = null) use (&$errors, $defaultSeverity) {
+                $errors[] = new ValidationError($message, $path, $severity ?? $defaultSeverity);
+            };
+
+            $rule->validate($document, $failCallback);
         }
 
-        return $errors;
+        return collect($errors)
+            ->groupBy('severity')
+            ->map(fn (Collection $errors) => $errors
+                ->groupBy('path')
+                ->map(fn (Collection $errors) => $errors->pluck('message')->all())
+                ->all()
+            )
+            ->all();
     }
 }

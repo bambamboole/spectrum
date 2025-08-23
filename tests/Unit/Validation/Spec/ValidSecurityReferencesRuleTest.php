@@ -84,9 +84,8 @@ it('fails validation when global security references undefined scheme', function
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors)->toHaveCount(1);
-    expect($errors[0])->toContain("Security requirement 'undefined_scheme' at security[0] references undefined security scheme");
-    expect($errors[0])->toContain('Available schemes: api_key');
+    expect($errors['error'])->toHaveKey('security.0.undefined_scheme');
+    expect($errors['error']['security.0.undefined_scheme'])->toBe(['Security requirement references undefined security scheme. Available schemes: api_key']);
 });
 
 it('fails validation when operation security references undefined scheme', function () {
@@ -125,9 +124,7 @@ it('fails validation when operation security references undefined scheme', funct
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors)->toHaveCount(2);
-    expect($errors[0])->toContain("Security requirement 'missing_scheme' at paths./users.get.security[0] references undefined security scheme");
-    expect($errors[1])->toContain("Security requirement 'another_missing' at paths./users.post.security[1] references undefined security scheme");
+    expect($errors['error'])->toHaveKeys(['paths./users.get.security.0.missing_scheme', 'paths./users.post.security.1.another_missing']);
 });
 
 it('fails validation when no security schemes are defined but security requirements exist', function () {
@@ -149,9 +146,7 @@ it('fails validation when no security schemes are defined but security requireme
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors)->toHaveCount(1);
-    expect($errors[0])->toContain("Security requirement 'api_key' at security[0] references undefined security scheme");
-    expect($errors[0])->toContain('Available schemes: ');
+    expect($errors['error'])->toHaveKey('security.0.api_key');
 });
 
 it('passes validation when no security requirements are defined', function () {
@@ -255,7 +250,7 @@ it('handles multiple security requirements with mixed validity', function () {
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors)->toHaveCount(2);
-    expect($errors[0])->toContain("Security requirement 'invalid_global' at security[1] references undefined security scheme");
-    expect($errors[1])->toContain("Security requirement 'missing_scheme' at paths./users.get.security[1] references undefined security scheme");
+    expect($errors['error'])->toHaveCount(2);
+    expect($errors['error'])->toHaveKeys(['security.1.invalid_global', 'paths./users.get.security.1.missing_scheme']);
+    expect($errors['error']['security.1.invalid_global'])->toBe(['Security requirement references undefined security scheme. Available schemes: api_key, oauth2, valid_scheme']);
 });
