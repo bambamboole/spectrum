@@ -1,14 +1,11 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Objects\RequestBody;
+use Bambamboole\OpenApi\ReferenceResolver;
 
 it('can parse minimal request body with content only', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'content' => [
             'application/json' => [
                 'schema' => ['type' => 'object'],
@@ -24,10 +21,8 @@ it('can parse minimal request body with content only', function () {
 });
 
 it('can parse request body with description and required', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'description' => 'User data for creating account',
         'required' => true,
         'content' => [
@@ -52,10 +47,8 @@ it('can parse request body with description and required', function () {
 });
 
 it('can parse request body with multiple content types', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'description' => 'User data in multiple formats',
         'content' => [
             'application/json' => [
@@ -101,10 +94,8 @@ it('can parse request body with multiple content types', function () {
 });
 
 it('can parse request body with complex nested schema', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'description' => 'Complex order creation payload',
         'required' => true,
         'content' => [
@@ -186,7 +177,7 @@ it('can parse request body with complex nested schema', function () {
 });
 
 it('can parse request body with schema reference', function () {
-    $context = ParsingContext::fromDocument([
+    ReferenceResolver::initialize([
         'openapi' => '3.0.0',
         'info' => [],
         'paths' => [],
@@ -204,9 +195,8 @@ it('can parse request body with schema reference', function () {
             ],
         ],
     ]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'description' => 'User creation data using schema reference',
         'required' => true,
         'content' => [
@@ -223,13 +213,13 @@ it('can parse request body with schema reference', function () {
     expect($requestBody->content['application/json']->schema->properties)->toHaveKey('username');
     expect($requestBody->content['application/json']->schema->properties)->toHaveKey('password');
     expect($requestBody->content['application/json']->schema->properties['username']->minLength)->toBe(3);
+
+    ReferenceResolver::clear();
 });
 
 it('can parse multiple request bodies in components', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBodies = $factory->createRequestBodies([
+    $requestBodies = RequestBody::multiple([
         'UserCreate' => [
             'description' => 'User creation payload',
             'required' => true,
@@ -288,10 +278,8 @@ it('can parse multiple request bodies in components', function () {
 });
 
 it('can parse file upload request body with encoding', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'description' => 'File upload with metadata',
         'required' => true,
         'content' => [

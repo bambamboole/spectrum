@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Bambamboole\OpenApi\Services;
+namespace Bambamboole\OpenApi;
 
 use Bambamboole\OpenApi\Exceptions\ReferenceResolutionException;
 
@@ -23,18 +23,17 @@ class ReferenceResolver
 
     public static function resolveRef(array $data): array
     {
+        if (! isset($data['$ref'])) {
+            return $data;
+        }
         if (self::$instance === null) {
-            self::initialize($data);
+            throw new ReferenceResolutionException('ReferenceResolver not initialized. Call ReferenceResolver::initialize() first.');
         }
-        if (isset($data['$ref'])) {
-            $resolvedData = self::$instance->resolve($data['$ref']);
-            if (is_array($resolvedData)) {
-                return self::resolveRef($resolvedData);
-            }
-            throw new \InvalidArgumentException('Resolved reference must be an array');
+        $resolvedData = self::$instance->resolve($data['$ref']);
+        if (is_array($resolvedData)) {
+            return self::resolveRef($resolvedData);
         }
-
-        return $data;
+        throw new \InvalidArgumentException('Resolved reference must be an array');
     }
 
     public static function clear(): void

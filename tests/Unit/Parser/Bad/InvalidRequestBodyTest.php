@@ -1,15 +1,11 @@
 <?php declare(strict_types=1);
-
-use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
+use Bambamboole\OpenApi\Objects\RequestBody;
 
 it('rejects request body missing required content', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createRequestBody([
+        RequestBody::fromArray([
             'description' => 'Missing content field',
             'required' => true,
         ]);
@@ -21,11 +17,9 @@ it('rejects request body missing required content', function () {
 });
 
 it('rejects request body with empty content array', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createRequestBody([
+        RequestBody::fromArray([
             'description' => 'Empty content array',
             'content' => [],
         ]);
@@ -37,11 +31,9 @@ it('rejects request body with empty content array', function () {
 });
 
 it('rejects request body with non-array content', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createRequestBody([
+        RequestBody::fromArray([
             'description' => 'Invalid content type',
             'content' => 'not-an-array',
         ]);
@@ -53,11 +45,9 @@ it('rejects request body with non-array content', function () {
 });
 
 it('rejects request body with non-string description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createRequestBody([
+        RequestBody::fromArray([
             'description' => 123,
             'content' => [
                 'application/json' => [
@@ -73,11 +63,9 @@ it('rejects request body with non-string description', function () {
 });
 
 it('rejects request body with invalid schema in content', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createRequestBody([
+        RequestBody::fromArray([
             'description' => 'Request body with invalid schema',
             'content' => [
                 'application/json' => [
@@ -96,10 +84,8 @@ it('rejects request body with invalid schema in content', function () {
 });
 
 it('accepts request body with valid optional fields', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'description' => 'Valid request body with all fields',
         'required' => true,
         'content' => [
@@ -124,10 +110,8 @@ it('accepts request body with valid optional fields', function () {
 });
 
 it('accepts request body without optional description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'content' => [
             'application/json' => [
                 'schema' => ['type' => 'string'],
@@ -141,10 +125,8 @@ it('accepts request body without optional description', function () {
 });
 
 it('accepts request body with false required flag', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $requestBody = $factory->createRequestBody([
+    $requestBody = RequestBody::fromArray([
         'description' => 'Optional request body',
         'required' => false,
         'content' => [

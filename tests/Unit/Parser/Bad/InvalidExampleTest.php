@@ -1,15 +1,11 @@
 <?php declare(strict_types=1);
-
-use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
+use Bambamboole\OpenApi\Objects\Example;
 
 it('rejects example with empty summary', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createExample([
+        Example::fromArray([
             'summary' => '',
             'value' => 'test',
         ]);
@@ -21,11 +17,9 @@ it('rejects example with empty summary', function () {
 });
 
 it('rejects example with empty description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createExample([
+        Example::fromArray([
             'description' => '',
             'value' => 'test',
         ]);
@@ -37,11 +31,9 @@ it('rejects example with empty description', function () {
 });
 
 it('rejects example with non-string summary', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createExample([
+        Example::fromArray([
             'summary' => 123,
             'value' => 'test',
         ]);
@@ -53,11 +45,9 @@ it('rejects example with non-string summary', function () {
 });
 
 it('rejects example with non-string description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createExample([
+        Example::fromArray([
             'description' => ['not', 'a', 'string'],
             'value' => 'test',
         ]);
@@ -69,11 +59,9 @@ it('rejects example with non-string description', function () {
 });
 
 it('rejects example with invalid externalValue URL', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createExample([
+        Example::fromArray([
             'externalValue' => 'not-a-valid-url',
             'summary' => 'External example',
         ]);
@@ -85,11 +73,9 @@ it('rejects example with invalid externalValue URL', function () {
 });
 
 it('rejects example with non-string externalValue', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createExample([
+        Example::fromArray([
             'externalValue' => 12345,
             'summary' => 'External example',
         ]);
@@ -101,10 +87,8 @@ it('rejects example with non-string externalValue', function () {
 });
 
 it('accepts example with valid externalValue URL', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([
+    $example = Example::fromArray([
         'externalValue' => 'https://example.com/user.json',
         'summary' => 'External user example',
         'description' => 'User data from external source',
@@ -117,13 +101,11 @@ it('accepts example with valid externalValue URL', function () {
 });
 
 it('accepts example with different valid URL schemes', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     $examples = [
-        $factory->createExample(['externalValue' => 'https://example.com/data.json']),
-        $factory->createExample(['externalValue' => 'http://example.com/data.json']),
-        $factory->createExample(['externalValue' => 'ftp://example.com/data.json']),
+        Example::fromArray(['externalValue' => 'https://example.com/data.json']),
+        Example::fromArray(['externalValue' => 'http://example.com/data.json']),
+        Example::fromArray(['externalValue' => 'ftp://example.com/data.json']),
     ];
 
     expect($examples[0]->externalValue)->toBe('https://example.com/data.json');
@@ -132,10 +114,8 @@ it('accepts example with different valid URL schemes', function () {
 });
 
 it('accepts example with all optional fields valid', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([
+    $example = Example::fromArray([
         'summary' => 'Complete example',
         'description' => 'A comprehensive example with all fields',
         'value' => [
@@ -153,10 +133,8 @@ it('accepts example with all optional fields valid', function () {
 });
 
 it('accepts example with no fields (minimal valid example)', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([]);
+    $example = Example::fromArray([]);
 
     expect($example->summary)->toBeNull();
     expect($example->description)->toBeNull();

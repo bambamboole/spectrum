@@ -1,14 +1,10 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Objects\MediaType;
+use Bambamboole\OpenApi\ReferenceResolver;
 
 it('can parse basic media type with schema', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => [
             'type' => 'object',
             'properties' => [
@@ -29,10 +25,7 @@ it('can parse basic media type with schema', function () {
 });
 
 it('can parse media type with example', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => ['type' => 'string'],
         'example' => 'Hello World',
     ]);
@@ -42,10 +35,7 @@ it('can parse media type with example', function () {
 });
 
 it('can parse media type with multiple examples', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => [
             'type' => 'object',
             'properties' => [
@@ -72,10 +62,7 @@ it('can parse media type with multiple examples', function () {
 });
 
 it('can parse media type with complex schema', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => [
             'type' => 'array',
             'items' => [
@@ -109,10 +96,7 @@ it('can parse media type with complex schema', function () {
 });
 
 it('can parse multiple media types in content', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $mediaTypes = $factory->createMediaTypes([
+    $mediaTypes = MediaType::multiple([
         'application/json' => [
             'schema' => [
                 'type' => 'object',
@@ -154,10 +138,7 @@ it('can parse multiple media types in content', function () {
 });
 
 it('can parse media type with encoding', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => [
             'type' => 'object',
             'properties' => [
@@ -188,10 +169,7 @@ it('can parse media type with encoding', function () {
 });
 
 it('can parse minimal media type with no schema', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'example' => 'Just an example without schema',
     ]);
 
@@ -202,7 +180,7 @@ it('can parse minimal media type with no schema', function () {
 });
 
 it('can parse media type with schema reference', function () {
-    $context = ParsingContext::fromDocument([
+    ReferenceResolver::initialize([
         'openapi' => '3.0.0',
         'info' => [],
         'paths' => [],
@@ -218,9 +196,8 @@ it('can parse media type with schema reference', function () {
             ],
         ],
     ]);
-    $factory = ComponentsFactory::create($context);
 
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => [
             '$ref' => '#/components/schemas/User',
         ],
@@ -232,4 +209,6 @@ it('can parse media type with schema reference', function () {
     expect($mediaType->schema->properties)->toHaveKey('name');
     expect($mediaType->example['id'])->toBe(1);
     expect($mediaType->example['name'])->toBe('John Doe');
+
+    ReferenceResolver::clear();
 });

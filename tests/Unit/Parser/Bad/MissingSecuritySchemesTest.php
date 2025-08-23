@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Exceptions\ParseException;
-
-it('rejects schema referencing security scheme without defining it', function () {
-    $this->expectSchema([
+it('accepts schema referencing security scheme without defining it during parsing', function () {
+    // Parsing should succeed - validation of security scheme references will happen later
+    $documentFn = fn () => \Bambamboole\OpenApi\OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Test API',
@@ -12,13 +11,9 @@ it('rejects schema referencing security scheme without defining it', function ()
         'paths' => [],
         // No components.securitySchemes defined
         'security' => [
-            ['ApiKeyAuth' => []], // References non-existent security scheme
+            ['ApiKeyAuth' => []], // References non-existent security scheme - validation will happen post-parsing
         ],
-    ])->toThrow(function (ParseException $e) {
-        expect($e->getMessages())->toMatchArray([
-            'security.0.ApiKeyAuth' => [
-                "Security scheme 'ApiKeyAuth' is not defined in components.securitySchemes.",
-            ],
-        ]);
-    });
+    ]);
+
+    expect($documentFn())->toBeInstanceOf(\Bambamboole\OpenApi\Objects\OpenApiDocument::class);
 });

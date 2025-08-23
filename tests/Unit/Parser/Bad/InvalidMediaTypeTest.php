@@ -1,15 +1,11 @@
 <?php declare(strict_types=1);
-
-use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
+use Bambamboole\OpenApi\Objects\MediaType;
 
 it('accepts media type with all fields empty or missing', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     // MediaType with no fields should be valid
-    $mediaType = $factory->createMediaType([]);
+    $mediaType = MediaType::fromArray([]);
 
     expect($mediaType)->toBeInstanceOf(\Bambamboole\OpenApi\Objects\MediaType::class);
     expect($mediaType->schema)->toBeNull();
@@ -19,11 +15,9 @@ it('accepts media type with all fields empty or missing', function () {
 });
 
 it('rejects media type with invalid schema', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createMediaType([
+        MediaType::fromArray([
             'schema' => [
                 'type' => 'string',
                 'minLength' => -1, // Invalid constraint
@@ -37,10 +31,8 @@ it('rejects media type with invalid schema', function () {
 });
 
 it('accepts media type with valid examples array', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => ['type' => 'string'],
         'examples' => [
             'example1' => [
@@ -60,10 +52,8 @@ it('accepts media type with valid examples array', function () {
 });
 
 it('accepts media type with encoding for multipart content', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => [
             'type' => 'object',
             'properties' => [
@@ -89,10 +79,8 @@ it('accepts media type with encoding for multipart content', function () {
 });
 
 it('handles media type with complex nested schema', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $mediaType = $factory->createMediaType([
+    $mediaType = MediaType::fromArray([
         'schema' => [
             'type' => 'object',
             'properties' => [
@@ -140,29 +128,27 @@ it('handles media type with complex nested schema', function () {
 });
 
 it('handles media type with various example types', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     // Test with string example
-    $stringMediaType = $factory->createMediaType([
+    $stringMediaType = MediaType::fromArray([
         'schema' => ['type' => 'string'],
         'example' => 'Simple string example',
     ]);
 
     // Test with number example
-    $numberMediaType = $factory->createMediaType([
+    $numberMediaType = MediaType::fromArray([
         'schema' => ['type' => 'number'],
         'example' => 42.5,
     ]);
 
     // Test with boolean example
-    $booleanMediaType = $factory->createMediaType([
+    $booleanMediaType = MediaType::fromArray([
         'schema' => ['type' => 'boolean'],
         'example' => true,
     ]);
 
     // Test with null example
-    $nullMediaType = $factory->createMediaType([
+    $nullMediaType = MediaType::fromArray([
         'example' => null,
     ]);
 

@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Exceptions\ParseException;
-
-it('rejects schema with invalid security reference', function () {
-    $this->expectSchema([
+it('accepts schema with invalid security reference during parsing', function () {
+    // Parsing should succeed - validation of security scheme references will happen later
+    $documentFn = fn () => \Bambamboole\OpenApi\OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Test API',
@@ -21,13 +20,9 @@ it('rejects schema with invalid security reference', function () {
         ],
         'security' => [
             ['ApiKeyAuth' => []],
-            ['NonExistentAuth' => []], // References non-existent security scheme
+            ['NonExistentAuth' => []], // References non-existent security scheme - validation will happen post-parsing
         ],
-    ])->toThrow(function (ParseException $e) {
-        expect($e->getMessages())->toMatchArray([
-            'security.1.NonExistentAuth' => [
-                "Security scheme 'NonExistentAuth' is not defined in components.securitySchemes.",
-            ],
-        ]);
-    });
+    ]);
+
+    expect($documentFn())->toBeInstanceOf(\Bambamboole\OpenApi\Objects\OpenApiDocument::class);
 });

@@ -1,14 +1,10 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Objects\Response;
+use Bambamboole\OpenApi\ReferenceResolver;
 
 it('can parse minimal response with description only', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'Successful response',
     ]);
 
@@ -20,10 +16,8 @@ it('can parse minimal response with description only', function () {
 });
 
 it('can parse response with headers', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'Response with headers',
         'headers' => [
             'X-Rate-Limit' => [
@@ -46,10 +40,8 @@ it('can parse response with headers', function () {
 });
 
 it('can parse response with content', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'User object response',
         'content' => [
             'application/json' => [
@@ -86,10 +78,8 @@ it('can parse response with content', function () {
 });
 
 it('can parse response with all properties', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'Complete response with all features',
         'headers' => [
             'X-Response-Id' => [
@@ -134,7 +124,7 @@ it('can parse response with all properties', function () {
 });
 
 it('can parse response with schema reference', function () {
-    $context = ParsingContext::fromDocument([
+    ReferenceResolver::initialize([
         'openapi' => '3.0.0',
         'info' => [],
         'paths' => [],
@@ -150,9 +140,8 @@ it('can parse response with schema reference', function () {
             ],
         ],
     ]);
-    $factory = ComponentsFactory::create($context);
 
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'User response using schema reference',
         'content' => [
             'application/json' => [
@@ -167,13 +156,13 @@ it('can parse response with schema reference', function () {
     expect($response->content['application/json']->schema->type)->toBe('object');
     expect($response->content['application/json']->schema->properties)->toHaveKey('id');
     expect($response->content['application/json']->schema->properties)->toHaveKey('name');
+
+    ReferenceResolver::clear();
 });
 
 it('can parse multiple responses in components', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $responses = $factory->createResponses([
+    $responses = Response::multiple([
         'Success' => [
             'description' => 'Successful operation',
             'content' => [
@@ -212,10 +201,8 @@ it('can parse multiple responses in components', function () {
 });
 
 it('can parse response with complex nested content structure', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'Paginated list response',
         'content' => [
             'application/json' => [

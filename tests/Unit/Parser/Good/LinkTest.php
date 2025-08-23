@@ -1,14 +1,11 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Objects\Link;
+use Bambamboole\OpenApi\ReferenceResolver;
 
 it('can parse minimal link with operationRef only', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         'operationRef' => '#/paths/~1users~1{userId}/get',
     ]);
 
@@ -22,10 +19,8 @@ it('can parse minimal link with operationRef only', function () {
 });
 
 it('can parse link with operationId', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         'operationId' => 'getUserById',
         'parameters' => [
             'userId' => '$response.body#/id',
@@ -41,10 +36,8 @@ it('can parse link with operationId', function () {
 });
 
 it('can parse link with all properties', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         'operationRef' => '#/paths/~1orders~1{orderId}/get',
         'parameters' => [
             'orderId' => '$response.body#/orderId',
@@ -81,10 +74,8 @@ it('can parse link with all properties', function () {
 });
 
 it('can parse link with various parameter expressions', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         'operationId' => 'searchResults',
         'parameters' => [
             'userId' => '$response.body#/user/id',
@@ -106,10 +97,8 @@ it('can parse link with various parameter expressions', function () {
 });
 
 it('can parse link with complex request body', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         'operationRef' => '#/paths/~1notifications/post',
         'requestBody' => [
             'type' => 'email',
@@ -136,10 +125,8 @@ it('can parse link with complex request body', function () {
 });
 
 it('can parse multiple links in components', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $links = $factory->createLinks([
+    $links = Link::multiple([
         'GetUserById' => [
             'operationId' => 'getUserById',
             'parameters' => [
@@ -175,10 +162,8 @@ it('can parse multiple links in components', function () {
 });
 
 it('can parse link with server variables', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         'operationId' => 'getResource',
         'server' => [
             'url' => 'https://{environment}.api.example.com/{version}',
@@ -208,7 +193,7 @@ it('can parse link with server variables', function () {
 });
 
 it('can parse link reference', function () {
-    $context = ParsingContext::fromDocument([
+    ReferenceResolver::initialize([
         'openapi' => '3.0.0',
         'info' => [],
         'paths' => [],
@@ -224,9 +209,8 @@ it('can parse link reference', function () {
             ],
         ],
     ]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         '$ref' => '#/components/links/GetUserById',
     ]);
 
@@ -234,4 +218,6 @@ it('can parse link reference', function () {
     expect($link->parameters)->toHaveKey('userId');
     expect($link->parameters['userId'])->toBe('$response.body#/id');
     expect($link->description)->toBe('Get user by ID from response');
+
+    ReferenceResolver::clear();
 });

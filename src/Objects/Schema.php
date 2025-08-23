@@ -2,7 +2,7 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\ReferenceResolver;
 use Bambamboole\OpenApi\Validation\Validator;
 
 /**

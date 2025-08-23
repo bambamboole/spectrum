@@ -1,14 +1,11 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Objects\Callback;
+use Bambamboole\OpenApi\ReferenceResolver;
 
 it('can parse minimal callback with single expression', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/webhookUrl}' => [
             'post' => [
                 'requestBody' => [
@@ -42,10 +39,8 @@ it('can parse minimal callback with single expression', function () {
 });
 
 it('can parse callback with multiple expressions', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/successUrl}' => [
             'post' => [
                 'description' => 'Success webhook',
@@ -101,10 +96,8 @@ it('can parse callback with multiple expressions', function () {
 });
 
 it('can parse callback with complex expressions and multiple HTTP methods', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/notificationEndpoint}?event={$request.body#/eventType}' => [
             'post' => [
                 'description' => 'Send notification via POST',
@@ -168,10 +161,8 @@ it('can parse callback with complex expressions and multiple HTTP methods', func
 });
 
 it('can parse multiple callbacks in components', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callbacks = $factory->createCallbacks([
+    $callbacks = Callback::multiple([
         'PaymentWebhook' => [
             '{$request.body#/webhookUrl}' => [
                 'post' => [
@@ -232,10 +223,8 @@ it('can parse multiple callbacks in components', function () {
 });
 
 it('can parse callback with runtime expressions for headers and query parameters', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/callbackUrl}?source={$method}&id={$request.body#/transactionId}' => [
             'post' => [
                 'description' => 'Transaction callback with dynamic parameters',
@@ -284,7 +273,7 @@ it('can parse callback with runtime expressions for headers and query parameters
 });
 
 it('can parse callback reference', function () {
-    $context = ParsingContext::fromDocument([
+    ReferenceResolver::initialize([
         'openapi' => '3.0.0',
         'info' => [],
         'paths' => [],
@@ -303,12 +292,13 @@ it('can parse callback reference', function () {
             ],
         ],
     ]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '$ref' => '#/components/callbacks/WebhookCallback',
     ]);
 
     expect($callback->expressions)->toHaveKey('{$request.body#/webhookUrl}');
     expect($callback->expressions['{$request.body#/webhookUrl}']['post']['description'])->toBe('Referenced webhook callback');
+
+    ReferenceResolver::clear();
 });

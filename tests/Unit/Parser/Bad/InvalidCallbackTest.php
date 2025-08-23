@@ -1,24 +1,18 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Objects\Callback;
 
 it('accepts callback with empty expressions', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([]);
+    $callback = Callback::fromArray([]);
 
     expect($callback)->toBeInstanceOf(Callback::class);
     expect($callback->expressions)->toBeEmpty();
 });
 
 it('accepts callback with valid expressions and path items', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/webhookUrl}' => [
             'post' => [
                 'description' => 'Webhook callback',
@@ -51,10 +45,8 @@ it('accepts callback with valid expressions and path items', function () {
 });
 
 it('accepts callback with multiple expressions', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/successUrl}' => [
             'post' => [
                 'description' => 'Success callback',
@@ -75,10 +67,8 @@ it('accepts callback with multiple expressions', function () {
 });
 
 it('accepts callback with complex runtime expressions', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/callbackUrl}?event={$request.body#/eventType}&user={$response.body#/userId}' => [
             'post' => [
                 'description' => 'Complex callback with multiple runtime expressions',
@@ -111,10 +101,8 @@ it('accepts callback with complex runtime expressions', function () {
 });
 
 it('accepts callback with multiple HTTP methods', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $callback = $factory->createCallback([
+    $callback = Callback::fromArray([
         '{$request.body#/webhookUrl}' => [
             'post' => [
                 'description' => 'Create webhook notification',

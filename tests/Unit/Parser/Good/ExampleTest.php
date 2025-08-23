@@ -1,14 +1,11 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
 use Bambamboole\OpenApi\Objects\Example;
+use Bambamboole\OpenApi\ReferenceResolver;
 
 it('can parse minimal example with value only', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([
+    $example = Example::fromArray([
         'value' => 'Hello World',
     ]);
 
@@ -20,10 +17,8 @@ it('can parse minimal example with value only', function () {
 });
 
 it('can parse example with external value', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([
+    $example = Example::fromArray([
         'externalValue' => 'https://example.com/examples/user.json',
         'summary' => 'User example',
         'description' => 'A complete user object example',
@@ -36,10 +31,8 @@ it('can parse example with external value', function () {
 });
 
 it('can parse example with all properties', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([
+    $example = Example::fromArray([
         'summary' => 'Complete user example',
         'description' => 'A comprehensive example showing all user properties with realistic data',
         'value' => [
@@ -82,32 +75,30 @@ it('can parse example with all properties', function () {
 });
 
 it('can parse example with different value types', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     $examples = [
         // String example
-        $factory->createExample([
+        Example::fromArray([
             'summary' => 'String example',
             'value' => 'Simple string value',
         ]),
         // Number example
-        $factory->createExample([
+        Example::fromArray([
             'summary' => 'Number example',
             'value' => 42.5,
         ]),
         // Boolean example
-        $factory->createExample([
+        Example::fromArray([
             'summary' => 'Boolean example',
             'value' => true,
         ]),
         // Array example
-        $factory->createExample([
+        Example::fromArray([
             'summary' => 'Array example',
             'value' => ['apple', 'banana', 'cherry'],
         ]),
         // Null example
-        $factory->createExample([
+        Example::fromArray([
             'summary' => 'Null example',
             'value' => null,
         ]),
@@ -121,10 +112,8 @@ it('can parse example with different value types', function () {
 });
 
 it('can parse multiple examples in components', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $examples = $factory->createExamples([
+    $examples = Example::multiple([
         'UserExample' => [
             'summary' => 'Basic user',
             'description' => 'A simple user object',
@@ -165,10 +154,8 @@ it('can parse multiple examples in components', function () {
 });
 
 it('can parse example with complex nested objects and arrays', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([
+    $example = Example::fromArray([
         'summary' => 'E-commerce order',
         'description' => 'Complete order with customer, items, and payment information',
         'value' => [
@@ -247,7 +234,7 @@ it('can parse example with complex nested objects and arrays', function () {
 });
 
 it('can parse example reference', function () {
-    $context = ParsingContext::fromDocument([
+    ReferenceResolver::initialize([
         'openapi' => '3.0.0',
         'info' => [],
         'paths' => [],
@@ -265,9 +252,8 @@ it('can parse example reference', function () {
             ],
         ],
     ]);
-    $factory = ComponentsFactory::create($context);
 
-    $example = $factory->createExample([
+    $example = Example::fromArray([
         '$ref' => '#/components/examples/UserExample',
     ]);
 
@@ -277,4 +263,6 @@ it('can parse example reference', function () {
     expect($example->value)->toHaveKey('username');
     expect($example->value['id'])->toBe(42);
     expect($example->value['username'])->toBe('sample_user');
+
+    ReferenceResolver::clear();
 });

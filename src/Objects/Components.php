@@ -60,7 +60,7 @@ readonly class Components extends OpenApiObject
             examples: Example::multiple($data['examples'] ?? [], 'components.examples'),
             requestBodies: RequestBody::multiple($data['requestBodies'] ?? [], 'components.requestBodies'),
             headers: Header::multiple($data['headers'] ?? [], 'components.headers'),
-            securitySchemes: SecurityScheme::multiple($data['securitySchemes'], 'components.securitySchemes'),
+            securitySchemes: SecurityScheme::multiple($data['securitySchemes'] ?? [], 'components.securitySchemes'),
             links: Link::multiple($data['links'] ?? [], 'components.links'),
             callbacks: Callback::multiple($data['callbacks'] ?? [], 'components.callbacks'),
             x: self::extractX($data),

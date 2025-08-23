@@ -1,15 +1,11 @@
 <?php declare(strict_types=1);
-
-use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
+use Bambamboole\OpenApi\Objects\Link;
 
 it('rejects link with empty operationRef', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationRef' => '',
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -20,11 +16,9 @@ it('rejects link with empty operationRef', function () {
 });
 
 it('rejects link with empty operationId', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationId' => '',
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -35,11 +29,9 @@ it('rejects link with empty operationId', function () {
 });
 
 it('rejects link with non-string operationRef', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationRef' => 123,
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -50,11 +42,9 @@ it('rejects link with non-string operationRef', function () {
 });
 
 it('rejects link with non-string operationId', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationId' => ['invalid'],
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -65,11 +55,9 @@ it('rejects link with non-string operationId', function () {
 });
 
 it('rejects link with non-array parameters', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationId' => 'getUserById',
             'parameters' => 'not-an-array',
         ]);
@@ -81,11 +69,9 @@ it('rejects link with non-array parameters', function () {
 });
 
 it('rejects link with empty description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationId' => 'getUserById',
             'description' => '',
         ]);
@@ -97,11 +83,9 @@ it('rejects link with empty description', function () {
 });
 
 it('rejects link with non-string description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationId' => 'getUserById',
             'description' => 123,
         ]);
@@ -113,11 +97,9 @@ it('rejects link with non-string description', function () {
 });
 
 it('rejects link with non-array server', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createLink([
+        Link::fromArray([
             'operationId' => 'getUserById',
             'server' => 'not-an-array',
         ]);
@@ -129,10 +111,8 @@ it('rejects link with non-array server', function () {
 });
 
 it('accepts link with valid optional fields', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([
+    $link = Link::fromArray([
         'operationRef' => '#/paths/~1users~1{userId}/get',
         'parameters' => [
             'userId' => '$response.body#/id',
@@ -150,10 +130,8 @@ it('accepts link with valid optional fields', function () {
 });
 
 it('accepts link without any fields (minimal valid link)', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $link = $factory->createLink([]);
+    $link = Link::fromArray([]);
 
     expect($link->operationRef)->toBeNull();
     expect($link->operationId)->toBeNull();

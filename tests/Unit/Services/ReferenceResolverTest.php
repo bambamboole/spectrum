@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Exceptions\ReferenceResolutionException;
-use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\ReferenceResolver;
 
 it('can resolve simple component reference', function () {
     $document = [

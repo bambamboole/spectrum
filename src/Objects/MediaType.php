@@ -2,7 +2,7 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\ReferenceResolver;
 use Bambamboole\OpenApi\Validation\Validator;
 
 /**
@@ -37,7 +37,7 @@ readonly class MediaType extends OpenApiObject
         Validator::validate($data, self::rules(), $keyPrefix);
 
         return new self(
-            schema: Schema::fromArray($data['schema'], $keyPrefix.'.schema'), // Will be set by factory if needed
+            schema: isset($data['schema']) ? Schema::fromArray($data['schema'], $keyPrefix.'.schema') : null,
             example: $data['example'] ?? null,
             examples: $data['examples'] ?? null,
             encoding: $data['encoding'] ?? null,

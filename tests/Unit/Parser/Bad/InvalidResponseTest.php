@@ -1,15 +1,11 @@
 <?php declare(strict_types=1);
-
-use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
+use Bambamboole\OpenApi\Objects\Response;
 
 it('rejects response missing required description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createResponse([
+        Response::fromArray([
             'headers' => [
                 'X-Rate-Limit' => [
                     'schema' => ['type' => 'integer'],
@@ -24,11 +20,9 @@ it('rejects response missing required description', function () {
 });
 
 it('rejects response with empty description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createResponse([
+        Response::fromArray([
             'description' => '',
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -39,11 +33,9 @@ it('rejects response with empty description', function () {
 });
 
 it('rejects response with non-string description', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createResponse([
+        Response::fromArray([
             'description' => 123,
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -54,11 +46,9 @@ it('rejects response with non-string description', function () {
 });
 
 it('rejects response with invalid headers structure', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createResponse([
+        Response::fromArray([
             'description' => 'Valid description',
             'headers' => 'invalid-headers',
         ]);
@@ -70,11 +60,9 @@ it('rejects response with invalid headers structure', function () {
 });
 
 it('rejects response with invalid content structure', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createResponse([
+        Response::fromArray([
             'description' => 'Valid description',
             'content' => 'invalid-content',
         ]);
@@ -86,11 +74,9 @@ it('rejects response with invalid content structure', function () {
 });
 
 it('rejects response with invalid links structure', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createResponse([
+        Response::fromArray([
             'description' => 'Valid description',
             'links' => 'invalid-links',
         ]);
@@ -102,11 +88,9 @@ it('rejects response with invalid links structure', function () {
 });
 
 it('rejects response with invalid schema in content', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
     try {
-        $factory->createResponse([
+        Response::fromArray([
             'description' => 'Response with invalid content schema',
             'content' => [
                 'application/json' => [
@@ -125,10 +109,8 @@ it('rejects response with invalid schema in content', function () {
 });
 
 it('accepts response with valid optional fields', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'Valid response with optional fields',
         'headers' => [
             'X-Custom-Header' => [
@@ -155,10 +137,8 @@ it('accepts response with valid optional fields', function () {
 });
 
 it('accepts response with empty optional arrays', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
 
-    $response = $factory->createResponse([
+    $response = Response::fromArray([
         'description' => 'Valid response with empty arrays',
         'headers' => [],
         'content' => [],

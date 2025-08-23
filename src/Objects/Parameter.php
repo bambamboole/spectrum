@@ -2,7 +2,7 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\ReferenceResolver;
 use Bambamboole\OpenApi\Validation\Validator;
 
 /**
@@ -64,7 +64,7 @@ readonly class Parameter extends OpenApiObject
             style: $data['style'] ?? null,
             explode: $data['explode'] ?? null,
             allowReserved: $data['allowReserved'] ?? null,
-            schema: Schema::fromArray($data['schema'], $keyPrefix.'.schema'),
+            schema: isset($data['schema']) ? Schema::fromArray($data['schema'], $keyPrefix.'.schema') : null,
             example: $data['example'] ?? null,
             examples: $data['examples'] ?? null,
             content: $data['content'] ?? null,
