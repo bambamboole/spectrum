@@ -1,15 +1,29 @@
 <?php declare(strict_types=1);
 namespace Bambamboole\OpenApi\Factories;
 
+use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
+use Bambamboole\OpenApi\Factories\Concerns\ValidatesOpenApiObjects;
 use Bambamboole\OpenApi\Objects\DocumentSecurity;
 use Bambamboole\OpenApi\Objects\Security;
 use Bambamboole\OpenApi\Objects\SecurityScheme;
 
 use function collect;
 
-class OpenApiSecurityFactory extends AbstractFactory
+class OpenApiSecurityFactory
 {
+    use ValidatesOpenApiObjects;
+
+    public function __construct(ParsingContext $context)
+    {
+        $this->context = $context;
+    }
+
+    public static function create(ParsingContext $context): self
+    {
+        return new self($context);
+    }
+
     public function validateAndCreateDocumentSecurity(array $data): DocumentSecurity
     {
         $securitySchemes = collect($data['components']['securitySchemes'] ?? [])

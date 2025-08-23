@@ -2,7 +2,9 @@
 
 namespace Bambamboole\OpenApi\Factories;
 
+use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
+use Bambamboole\OpenApi\Factories\Concerns\ValidatesOpenApiObjects;
 use Bambamboole\OpenApi\Objects\Components;
 use Bambamboole\OpenApi\Objects\Contact;
 use Bambamboole\OpenApi\Objects\ExternalDocs;
@@ -15,13 +17,26 @@ use Bambamboole\OpenApi\Objects\Tag;
 
 use function collect;
 
-class OpenApiObjectFactory extends AbstractFactory
+class OpenApiDocumentFactory
 {
-    public function createDocument(array $data): OpenApiDocument
+    use ValidatesOpenApiObjects;
+
+    public function __construct(ParsingContext $context)
     {
+        $this->context = $context;
+    }
+
+    public static function create(array $data): self
+    {
+        return new self(ParsingContext::fromDocument($data));
+    }
+
+    public function createDocument(): OpenApiDocument
+    {
+        $data = $this->context->document;
         $this->validate($data, OpenApiDocument::class);
 
-        $documentSecurity = OpenApiSecurityFactory::create()->validateAndCreateDocumentSecurity($data);
+        $documentSecurity = OpenApiSecurityFactory::create($this->context)->validateAndCreateDocumentSecurity($data);
         $info = $this->createInfo($data['info'], 'info');
         $components = $this->createComponents($data['components'] ?? [], $documentSecurity->securitySchemes);
 
@@ -41,7 +56,7 @@ class OpenApiObjectFactory extends AbstractFactory
         );
     }
 
-    public function createInfo(array $data, string $keyPrefix = ''): Info
+    private function createInfo(array $data, string $keyPrefix = ''): Info
     {
         $this->validate($data, Info::class, $keyPrefix);
 
@@ -58,7 +73,7 @@ class OpenApiObjectFactory extends AbstractFactory
         );
     }
 
-    public function createContact(array $data, string $keyPrefix = ''): Contact
+    private function createContact(array $data, string $keyPrefix = ''): Contact
     {
         $this->validate($data, Contact::class, $keyPrefix);
 
@@ -69,7 +84,7 @@ class OpenApiObjectFactory extends AbstractFactory
         );
     }
 
-    public function createLicense(array $data, string $keyPrefix = ''): License
+    private function createLicense(array $data, string $keyPrefix = ''): License
     {
         $this->validate($data, License::class, $keyPrefix);
 
@@ -79,10 +94,22 @@ class OpenApiObjectFactory extends AbstractFactory
         );
     }
 
-    public function createSchema(array $data): Schema
+    private function createSchema(array $data): Schema
     {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            // If the resolved data also has a $ref, that's a problem with the schema design
+            // The resolver should have already resolved it completely
+            if (is_array($resolvedData)) {
+                return $this->createSchema($resolvedData);
+            }
+            // If it's not an array, something went wrong
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
         // Advanced schema validation with conditional rules
-        $validator = $this->validator->make($data, [
+        $validator = $this->context->validator->make($data, [
             'type' => ['sometimes', 'string', 'in:string,number,integer,boolean,array,object,null'],
             'format' => ['sometimes', 'string', 'filled'],
             'title' => ['sometimes', 'string', 'filled'],
@@ -176,7 +203,7 @@ class OpenApiObjectFactory extends AbstractFactory
         );
     }
 
-    public function createServer(array $data, string $keyPrefix = ''): Server
+    private function createServer(array $data, string $keyPrefix = ''): Server
     {
         $this->validate($data, Server::class, $keyPrefix);
 
@@ -187,7 +214,7 @@ class OpenApiObjectFactory extends AbstractFactory
         );
     }
 
-    public function createExternalDocs(array $data, string $keyPrefix = ''): ExternalDocs
+    private function createExternalDocs(array $data, string $keyPrefix = ''): ExternalDocs
     {
         $this->validate($data, ExternalDocs::class, $keyPrefix);
 
@@ -197,7 +224,7 @@ class OpenApiObjectFactory extends AbstractFactory
         );
     }
 
-    public function createTag(array $data, string $keyPrefix = ''): Tag
+    private function createTag(array $data, string $keyPrefix = ''): Tag
     {
         $this->validate($data, Tag::class, $keyPrefix);
 
