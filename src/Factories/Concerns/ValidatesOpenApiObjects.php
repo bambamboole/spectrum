@@ -22,7 +22,7 @@ trait ValidatesOpenApiObjects
         if ($validator->fails()) {
             $prefix = empty($keyPrefix) ? '' : "{$keyPrefix}.";
             $messages = collect($validator->errors()->toArray())
-                ->mapWithKeys(fn ($errors, $field) => ["{$prefix}{$field}" => $errors])
+                ->mapWithKeys(fn ($errors, $field) => [ltrim("{$prefix}{$field}", '.') => $errors])
                 ->toArray();
 
             throw ParseException::withMessages($messages);

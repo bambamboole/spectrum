@@ -6,6 +6,7 @@ use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Factories\Concerns\ValidatesOpenApiObjects;
 use Bambamboole\OpenApi\Objects\Components;
 use Bambamboole\OpenApi\Objects\Header;
+use Bambamboole\OpenApi\Objects\MediaType;
 use Bambamboole\OpenApi\Objects\Parameter;
 use Bambamboole\OpenApi\Objects\Schema;
 
@@ -113,7 +114,7 @@ class ComponentsFactory
             style: $data['style'] ?? null,
             explode: $data['explode'] ?? null,
             allowReserved: $data['allowReserved'] ?? null,
-            schema: isset($data['schema']) ? $this->createSchema($data['schema'], $keyPrefix.'.schema') : null,
+            schema: isset($data['schema']) ? $this->createSchema($data['schema'], $this->buildKeyPrefix($keyPrefix, 'schema')) : null,
             example: $data['example'] ?? null,
             examples: $data['examples'] ?? null,
             content: $data['content'] ?? null,
@@ -150,7 +151,7 @@ class ComponentsFactory
             allowEmptyValue: $data['allowEmptyValue'] ?? null,
             style: $data['style'] ?? null,
             explode: $data['explode'] ?? null,
-            schema: isset($data['schema']) ? $this->createSchema($data['schema'], $keyPrefix.'.schema') : null,
+            schema: isset($data['schema']) ? $this->createSchema($data['schema'], $this->buildKeyPrefix($keyPrefix, 'schema')) : null,
             example: $data['example'] ?? null,
             examples: $data['examples'] ?? null,
             content: $data['content'] ?? null,
@@ -162,6 +163,37 @@ class ComponentsFactory
         $parsed = [];
         foreach ($headers as $key => $header) {
             $parsed[$key] = $this->createHeader($header, "components.headers.{$key}");
+        }
+
+        return $parsed;
+    }
+
+    public function createMediaType(array $data, string $keyPrefix = ''): MediaType
+    {
+        // MediaType objects are not typically referenced, but handle it for completeness
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createMediaType($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, MediaType::class, $keyPrefix);
+
+        return new MediaType(
+            schema: isset($data['schema']) ? $this->createSchema($data['schema'], $this->buildKeyPrefix($keyPrefix, 'schema')) : null,
+            example: $data['example'] ?? null,
+            examples: $data['examples'] ?? null,
+            encoding: $data['encoding'] ?? null,
+        );
+    }
+
+    public function createMediaTypes(array $content, string $keyPrefix = ''): array
+    {
+        $parsed = [];
+        foreach ($content as $mediaType => $mediaTypeData) {
+            $parsed[$mediaType] = $this->createMediaType($mediaTypeData, "{$keyPrefix}.{$mediaType}");
         }
 
         return $parsed;
@@ -205,7 +237,12 @@ class ComponentsFactory
         }
 
         return collect($schemas)
-            ->map(fn ($schema, $key) => $this->createSchema($schema, $keyPrefix.".{$key}"))
+            ->map(fn ($schema, $key) => $this->createSchema($schema, $this->buildKeyPrefix($keyPrefix, (string) $key)))
             ->all();
+    }
+
+    private function buildKeyPrefix(string $keyPrefix, string $key): string
+    {
+        return $keyPrefix === '' ? $key : $keyPrefix.'.'.$key;
     }
 }
