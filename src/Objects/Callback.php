@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * A map of possible out-of band callbacks related to the parent operation.
  *
@@ -21,5 +24,18 @@ readonly class Callback extends OpenApiObject
     public function __construct(
         /** @var array<string, array> Map of callback expressions to Path Item data */
         public array $expressions = [],
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new self(
+            expressions: $data,
+            x: self::extractX($data),
+        );
+    }
 }

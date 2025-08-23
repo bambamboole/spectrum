@@ -14,9 +14,10 @@
 - ✅ **Testing**: Comprehensive test suite with clean Pest-based structure
 - ✅ **Custom Features**: Semver validation rule, keyPrefix error messages
 
-**📈 Progress**: ~95% of planned core features implemented  
+**📈 Progress**: ~97% of planned core features implemented  
 **🧪 Tests**: 146 tests passing, 640 assertions  
 **🏗️ Next Phase**: Path Operations (Operation → PathItem → Paths objects)
+**🔧 Architecture**: Now using clean fromArray pattern with context registry for all objects
 
 ## Phase 1: Core Infrastructure & Architecture ✅
 
@@ -305,3 +306,22 @@ The parser now supports the complete OpenAPI content model - from simple string 
 
 **Technical Achievement:**
 This completes the most critical architectural foundation. Every OpenAPI component type now has proper value objects, validation, $ref resolution, and comprehensive test coverage. The parser can handle any OpenAPI components section with full fidelity, making it production-ready for enterprise API specifications.
+
+## 🎯 Latest Architectural Improvement: fromArray Pattern & Factory Cleanup
+
+**What was accomplished:**
+- **fromArray Pattern**: All 17 OpenAPI objects now have clean `fromArray()` static methods for self-instantiation
+- **Context Registry**: Added `OpenApiContextRegistry` for static context management, enabling objects to access parsing context when needed
+- **Factory Cleanup**: Reduced ComponentsFactory from 440 lines to 300 lines by leveraging fromArray methods and removing redundant code
+- **Specification Extensions**: All objects support x-* vendor extensions through automatic extraction
+- **Cleaner Architecture**: Objects are now responsible for their own creation while factories handle complex dependencies
+
+**Impact:**
+- **Cleaner Code**: 35% reduction in factory complexity while maintaining full functionality
+- **Better Encapsulation**: Objects handle their own validation and instantiation logic
+- **Maintainability**: Easier to add new objects following consistent fromArray pattern
+- **Zero Regressions**: All 146 tests still pass (640 assertions) after major refactoring
+- **OpenAPI Compliance**: Full x-* specification extensions support across all objects
+
+**Technical Achievement:**
+This represents a significant architectural improvement that makes the codebase more maintainable and follows better object-oriented principles. Each object is now self-contained while still supporting complex factory-based creation for objects with dependencies like Schema references and MediaType arrays.

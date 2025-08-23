@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * Describes a single operation parameter.
  *
@@ -42,5 +45,30 @@ readonly class Parameter extends OpenApiObject
         public mixed $example = null,
         public ?array $examples = null,
         public ?array $content = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new self(
+            name: $data['name'],
+            in: $data['in'],
+            description: $data['description'] ?? null,
+            required: $data['required'] ?? false,
+            deprecated: $data['deprecated'] ?? false,
+            allowEmptyValue: $data['allowEmptyValue'] ?? null,
+            style: $data['style'] ?? null,
+            explode: $data['explode'] ?? null,
+            allowReserved: $data['allowReserved'] ?? null,
+            schema: Schema::fromArray($data['schema'], $keyPrefix.'.schema'),
+            example: $data['example'] ?? null,
+            examples: $data['examples'] ?? null,
+            content: $data['content'] ?? null,
+            x: self::extractX($data),
+        );
+    }
 }

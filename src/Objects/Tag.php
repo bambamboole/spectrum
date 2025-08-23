@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * Adds metadata to a single tag that is used by the Operation Object.
  *
@@ -21,5 +24,20 @@ readonly class Tag extends OpenApiObject
         public string $name,
         public ?string $description = null,
         public ?ExternalDocs $externalDocs = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new self(
+            name: $data['name'],
+            description: $data['description'] ?? null,
+            externalDocs: isset($data['externalDocs']) ? ExternalDocs::fromArray($data['externalDocs'], $keyPrefix) : null,
+            x: self::extractX($data),
+        );
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * License information for the exposed API.
  *
@@ -20,5 +22,18 @@ readonly class License extends OpenApiObject
     public function __construct(
         public string $name,
         public ?string $url = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new License(
+            name: $data['name'],
+            url: $data['url'] ?? null,
+            x: self::extractX($data),
+        );
+    }
 }

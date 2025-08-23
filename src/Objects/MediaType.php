@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * Each Media Type Object provides schema and examples for the media type identified by its key.
  *
@@ -24,5 +27,21 @@ readonly class MediaType extends OpenApiObject
         public mixed $example = null,
         public ?array $examples = null,
         public ?array $encoding = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new self(
+            schema: Schema::fromArray($data['schema'], $keyPrefix.'.schema'), // Will be set by factory if needed
+            example: $data['example'] ?? null,
+            examples: $data['examples'] ?? null,
+            encoding: $data['encoding'] ?? null,
+            x: self::extractX($data),
+        );
+    }
 }

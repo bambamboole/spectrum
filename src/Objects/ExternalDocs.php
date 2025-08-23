@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * Allows referencing an external resource for extended documentation.
  *
@@ -20,5 +23,19 @@ readonly class ExternalDocs extends OpenApiObject
     public function __construct(
         public string $url,
         public ?string $description = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new self(
+            url: $data['url'],
+            description: $data['description'] ?? null,
+            x: self::extractX($data),
+        );
+    }
 }

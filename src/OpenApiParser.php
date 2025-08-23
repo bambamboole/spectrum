@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
-
 namespace Bambamboole\OpenApi;
 
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Factories\OpenApiDocumentFactory;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -54,6 +52,6 @@ class OpenApiParser
 
     public function parseArray(array $data): OpenApiDocument
     {
-        return OpenApiDocumentFactory::create($data)->createDocument();
+        return OpenApiDocument::fromArray($data);
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * An object representing a Server.
  *
@@ -22,5 +25,20 @@ readonly class Server extends OpenApiObject
         public string $url,
         public ?string $description = null,
         public ?array $variables = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new Server(
+            url: $data['url'],
+            description: $data['description'] ?? null,
+            variables: $data['variables'] ?? null,
+            x: self::extractX($data),
+        );
+    }
 }

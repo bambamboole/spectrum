@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * The Schema Object allows the definition of input and output data types.
  *
@@ -84,10 +87,15 @@ readonly class Schema extends OpenApiObject
         public ?array $oneOf = null,
         public ?Schema $not = null,
         public ?string $ref = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
 
-    public static function create(array $data): self
+    public static function fromArray(array $data, string $keyPrefix = ''): self
     {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
         return new self(
             type: $data['type'] ?? null,
             format: $data['format'] ?? null,
@@ -106,18 +114,59 @@ readonly class Schema extends OpenApiObject
             minItems: $data['minItems'] ?? null,
             maxItems: $data['maxItems'] ?? null,
             uniqueItems: $data['uniqueItems'] ?? null,
-            items: null, // Will be set by ObjectFactory
-            properties: null, // Will be set by ObjectFactory
+            items: isset($data['items']) ? self::fromArray($data['items']) : null,
+            properties: self::createSchemaProperties($data['properties'] ?? null),
             required: $data['required'] ?? null,
-            additionalProperties: null, // Will be set by ObjectFactory
+            additionalProperties: self::createAdditionalProperties($data['additionalProperties'] ?? null), // Will be set by ObjectFactory
             minProperties: $data['minProperties'] ?? null,
             maxProperties: $data['maxProperties'] ?? null,
             enum: $data['enum'] ?? null,
-            allOf: null, // Will be set by ObjectFactory
-            anyOf: null, // Will be set by ObjectFactory
-            oneOf: null, // Will be set by ObjectFactory
-            not: null, // Will be set by ObjectFactory
+            allOf: self::createSchemaArray($data['allOf'] ?? null),
+            anyOf: self::createSchemaArray($data['anyOf'] ?? null),
+            oneOf: self::createSchemaArray($data['oneOf'] ?? null),
+            not: isset($data['not']) ? self::fromArray($data['not']) : null, // Will be set by ObjectFactory
             ref: $data['$ref'] ?? null,
+            x: self::extractX($data),
         );
+    }
+
+    private static function createSchemaArray(?array $schemas): ?array
+    {
+        if ($schemas === null) {
+            return null;
+        }
+
+        return array_map(self::fromArray(...), $schemas);
+    }
+
+    private static function createSchemaProperties(?array $properties): ?array
+    {
+        if ($properties === null) {
+            return null;
+        }
+
+        $parsed = [];
+        foreach ($properties as $key => $property) {
+            $parsed[$key] = self::fromArray($property);
+        }
+
+        return $parsed;
+    }
+
+    private static function createAdditionalProperties(mixed $additionalProperties): bool|Schema|null
+    {
+        if ($additionalProperties === null) {
+            return null;
+        }
+
+        if (is_bool($additionalProperties)) {
+            return $additionalProperties;
+        }
+
+        if (is_array($additionalProperties)) {
+            return self::fromArray($additionalProperties);
+        }
+
+        return null;
     }
 }

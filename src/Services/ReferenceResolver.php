@@ -6,6 +6,8 @@ use Bambamboole\OpenApi\Exceptions\ReferenceResolutionException;
 
 class ReferenceResolver
 {
+    private static ?self $instance = null;
+
     private array $resolvedCache = [];
 
     private array $resolutionStack = [];
@@ -13,6 +15,32 @@ class ReferenceResolver
     public function __construct(
         private readonly array $document
     ) {}
+
+    public static function initialize(array $data): void
+    {
+        self::$instance = new self($data);
+    }
+
+    public static function resolveRef(array $data): array
+    {
+        if (self::$instance === null) {
+            self::initialize($data);
+        }
+        if (isset($data['$ref'])) {
+            $resolvedData = self::$instance->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return self::resolveRef($resolvedData);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        return $data;
+    }
+
+    public static function clear(): void
+    {
+        self::$instance = null;
+    }
 
     public function resolve(string $ref): mixed
     {

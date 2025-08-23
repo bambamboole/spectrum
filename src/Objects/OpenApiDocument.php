@@ -2,7 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
 use Bambamboole\OpenApi\Validation\Rules\Semver;
+use Bambamboole\OpenApi\Validation\Validator;
 
 readonly class OpenApiDocument extends OpenApiObject
 {
@@ -27,4 +29,28 @@ readonly class OpenApiDocument extends OpenApiObject
         public array $servers = [],
         public ?ExternalDocs $externalDocs = null,
     ) {}
+
+    public static function fromArray(array $data): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules());
+
+        $info = Info::fromArray($data['info'], 'info');
+        $components = Components::fromArray($data['components'] ?? [], 'components');
+        $security = Security::multiple($data['security'] ?? [], 'security');
+        $servers = Server::multiple($data['servers'] ?? [], 'servers');
+        $tags = Tag::multiple($data['tags'] ?? [], 'tags');
+        $externalDocs = isset($data['externalDocs']) ? ExternalDocs::fromArray($data['externalDocs']) : null;
+
+        return new OpenApiDocument(
+            openapi: $data['openapi'],
+            info: $info,
+            paths: $data['paths'],
+            components: $components,
+            security: $security,
+            tags: $tags,
+            servers: $servers,
+            externalDocs: $externalDocs,
+        );
+    }
 }

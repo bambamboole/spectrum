@@ -2,6 +2,9 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * Describes a single request body.
  *
@@ -22,5 +25,20 @@ readonly class RequestBody extends OpenApiObject
         public array $content,
         public ?string $description = null,
         public bool $required = false,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new self(
+            content: MediaType::multiple($data['content'], $keyPrefix.'.content'),
+            description: $data['description'] ?? null,
+            required: $data['required'] ?? false,
+            x: self::extractX($data),
+        );
+    }
 }

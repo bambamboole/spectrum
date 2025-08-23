@@ -2,6 +2,8 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Validation\Validator;
+
 /**
  * Holds a set of reusable objects for different aspects of the OAS.
  *
@@ -43,5 +45,25 @@ readonly class Components extends OpenApiObject
         public array $links = [],
         /** @var Callback[] */
         public array $callbacks = [],
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new self(
+            schemas: Schema::multiple($data['schemas'] ?? [], 'components.schemas'),
+            responses: Response::multiple($data['responses'] ?? [], 'components.responses'),
+            parameters: Parameter::multiple($data['parameters'] ?? [], 'components.parameters'),
+            examples: Example::multiple($data['examples'] ?? [], 'components.examples'),
+            requestBodies: RequestBody::multiple($data['requestBodies'] ?? [], 'components.requestBodies'),
+            headers: Header::multiple($data['headers'] ?? [], 'components.headers'),
+            securitySchemes: SecurityScheme::multiple($data['securitySchemes'], 'components.securitySchemes'),
+            links: Link::multiple($data['links'] ?? [], 'components.links'),
+            callbacks: Callback::multiple($data['callbacks'] ?? [], 'components.callbacks'),
+            x: self::extractX($data),
+        );
+    }
 }

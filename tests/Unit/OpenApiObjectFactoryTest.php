@@ -1,25 +1,14 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Factories\ComponentsFactory;
-use Bambamboole\OpenApi\Factories\OpenApiDocumentFactory;
 use Bambamboole\OpenApi\Objects\Components;
 use Bambamboole\OpenApi\Objects\Contact;
 use Bambamboole\OpenApi\Objects\Info;
 use Bambamboole\OpenApi\Objects\Schema;
 use Bambamboole\OpenApi\OpenApiParser;
 
-it('can create Info object via factory', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = new OpenApiDocumentFactory($context);
-
-    // Use reflection to access the private createInfo method
-    $reflection = new \ReflectionClass($factory);
-    $createInfoMethod = $reflection->getMethod('createInfo');
-    $createInfoMethod->setAccessible(true);
-
-    $info = $createInfoMethod->invoke($factory, [
+it('can create Info object via fromArray', function () {
+    $info = Info::fromArray([
         'title' => 'Test API',
         'version' => '1.0.0',
         'description' => 'A test API',
@@ -32,16 +21,8 @@ it('can create Info object via factory', function () {
 });
 
 it('validates Info object via Laravel validator', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = new OpenApiDocumentFactory($context);
-
-    // Use reflection to access the private createInfo method
-    $reflection = new \ReflectionClass($factory);
-    $createInfoMethod = $reflection->getMethod('createInfo');
-    $createInfoMethod->setAccessible(true);
-
     try {
-        $createInfoMethod->invoke($factory, [
+        Info::fromArray([
             'version' => '1.0.0', // missing title
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -52,16 +33,8 @@ it('validates Info object via Laravel validator', function () {
 });
 
 it('validates Contact email via Laravel validator', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = new OpenApiDocumentFactory($context);
-
-    // Use reflection to access the private createContact method
-    $reflection = new \ReflectionClass($factory);
-    $createContactMethod = $reflection->getMethod('createContact');
-    $createContactMethod->setAccessible(true);
-
     try {
-        $createContactMethod->invoke($factory, [
+        Contact::fromArray([
             'email' => 'invalid-email', // invalid email format
         ]);
         expect(false)->toBeTrue('Expected ParseException to be thrown');
@@ -72,11 +45,8 @@ it('validates Contact email via Laravel validator', function () {
 });
 
 it('validates Schema constraints via Laravel validator', function () {
-    $context = ParsingContext::fromDocument(['openapi' => '3.0.0', 'info' => [], 'paths' => []]);
-    $factory = ComponentsFactory::create($context);
-
     try {
-        $factory->createSchema([
+        Schema::fromArray([
             'type' => 'string',
             'minLength' => -1, // invalid constraint
         ]);

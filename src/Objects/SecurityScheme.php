@@ -2,6 +2,14 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+use Bambamboole\OpenApi\Services\ReferenceResolver;
+use Bambamboole\OpenApi\Validation\Validator;
+
+/**
+ * Defines a security scheme that can be used by the operations.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#security-scheme-object
+ */
 readonly class SecurityScheme extends OpenApiObject
 {
     public static function rules(): array
@@ -35,5 +43,25 @@ readonly class SecurityScheme extends OpenApiObject
         public ?string $bearerFormat = null,
         public ?array $flows = null,
         public ?string $openIdConnectUrl = null,
+        /** @var array<string, mixed> Specification extensions (x-* properties) */
+        public array $x = [],
     ) {}
+
+    public static function fromArray(array $data, string $keyPrefix = ''): self
+    {
+        $data = ReferenceResolver::resolveRef($data);
+        Validator::validate($data, self::rules(), $keyPrefix);
+
+        return new SecurityScheme(
+            type: $data['type'],
+            description: $data['description'] ?? null,
+            name: $data['name'] ?? null,
+            in: $data['in'] ?? null,
+            scheme: $data['scheme'] ?? null,
+            bearerFormat: $data['bearerFormat'] ?? null,
+            flows: $data['flows'] ?? null,
+            openIdConnectUrl: $data['openIdConnectUrl'] ?? null,
+            x: self::extractX($data),
+        );
+    }
 }
