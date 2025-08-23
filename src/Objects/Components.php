@@ -22,10 +22,12 @@ readonly class Components extends OpenApiObject
     public function __construct(
         /** @var Schema[] */
         public array $schemas = [],
+        /** @var Response[] */
         public array $responses = [],
         /** @var Parameter[] */
         public array $parameters = [],
         public array $examples = [],
+        /** @var RequestBody[] */
         public array $requestBodies = [],
         /** @var Header[] */
         public array $headers = [],

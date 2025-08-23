@@ -8,6 +8,8 @@ use Bambamboole\OpenApi\Objects\Components;
 use Bambamboole\OpenApi\Objects\Header;
 use Bambamboole\OpenApi\Objects\MediaType;
 use Bambamboole\OpenApi\Objects\Parameter;
+use Bambamboole\OpenApi\Objects\RequestBody;
+use Bambamboole\OpenApi\Objects\Response;
 use Bambamboole\OpenApi\Objects\Schema;
 
 use function collect;
@@ -30,10 +32,10 @@ class ComponentsFactory
     {
         return new Components(
             schemas: $this->createSchemaArray($data['schemas'] ?? [], 'components.schemas'),
-            responses: $data['responses'] ?? [],
+            responses: $this->createResponses($data['responses'] ?? []),
             parameters: $this->createParameters($data['parameters'] ?? []),
             examples: $data['examples'] ?? [],
-            requestBodies: $data['requestBodies'] ?? [],
+            requestBodies: $this->createRequestBodies($data['requestBodies'] ?? []),
             headers: $this->createHeaders($data['headers'] ?? []),
             securitySchemes: $securitySchemes,
             links: $data['links'] ?? [],
@@ -194,6 +196,67 @@ class ComponentsFactory
         $parsed = [];
         foreach ($content as $mediaType => $mediaTypeData) {
             $parsed[$mediaType] = $this->createMediaType($mediaTypeData, "{$keyPrefix}.{$mediaType}");
+        }
+
+        return $parsed;
+    }
+
+    public function createResponse(array $data, string $keyPrefix = ''): Response
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createResponse($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, Response::class, $keyPrefix);
+
+        return new Response(
+            description: $data['description'],
+            headers: isset($data['headers']) ? $this->createHeaders($data['headers']) : null,
+            content: isset($data['content']) ? $this->createMediaTypes($data['content'], $this->buildKeyPrefix($keyPrefix, 'content')) : null,
+            links: $data['links'] ?? null,
+        );
+    }
+
+    public function createResponses(array $responses): array
+    {
+        $parsed = [];
+        foreach ($responses as $key => $response) {
+            $parsed[$key] = $this->createResponse($response, "components.responses.{$key}");
+        }
+
+        return $parsed;
+    }
+
+    public function createRequestBody(array $data, string $keyPrefix = ''): RequestBody
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createRequestBody($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, RequestBody::class, $keyPrefix);
+
+        return new RequestBody(
+            content: $this->createMediaTypes($data['content'], $this->buildKeyPrefix($keyPrefix, 'content')),
+            description: $data['description'] ?? null,
+            required: $data['required'] ?? false,
+        );
+    }
+
+    public function createRequestBodies(array $requestBodies): array
+    {
+        $parsed = [];
+        foreach ($requestBodies as $key => $requestBody) {
+            $parsed[$key] = $this->createRequestBody($requestBody, "components.requestBodies.{$key}");
         }
 
         return $parsed;
