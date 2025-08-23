@@ -19,6 +19,7 @@ readonly class OpenApiDocument extends OpenApiObject
     public function __construct(
         public string $openapi,
         public Info $info,
+        /** @var array<string, PathItem> */
         public array $paths,
         public Components $components,
         /** @var Security[] */
@@ -49,7 +50,7 @@ readonly class OpenApiDocument extends OpenApiObject
             return new OpenApiDocument(
                 openapi: $data['openapi'],
                 info: $info,
-                paths: $data['paths'],
+                paths: PathItem::multiple($data['paths'], 'paths'),
                 components: $components,
                 security: $security,
                 tags: $tags,
