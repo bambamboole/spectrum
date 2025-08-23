@@ -1,5 +1,4 @@
 <?php declare(strict_types=1);
-
 namespace Bambamboole\OpenApi\Validation\Spec;
 
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
@@ -9,7 +8,7 @@ class ValidSecurityReferencesRule implements SpecRuleInterface
 {
     public function validate(OpenApiDocument $document, \Closure $fail): void
     {
-        $availableSchemes = $this->getAvailableSecuritySchemes($document);
+        $availableSchemes = array_keys($document->components->securitySchemes);
 
         // Validate global security requirements
         $this->validateSecurityRequirements($document->security, $availableSchemes, 'security', $fail);
@@ -31,14 +30,6 @@ class ValidSecurityReferencesRule implements SpecRuleInterface
     }
 
     /**
-     * @return array<string>
-     */
-    private function getAvailableSecuritySchemes(OpenApiDocument $document): array
-    {
-        return array_keys($document->components->securitySchemes);
-    }
-
-    /**
      * @param  array<Security>  $securityRequirements
      * @param  array<string>  $availableSchemes
      */
@@ -47,7 +38,7 @@ class ValidSecurityReferencesRule implements SpecRuleInterface
         foreach ($securityRequirements as $index => $securityRequirement) {
             foreach (array_keys($securityRequirement->requirements) as $schemeName) {
                 if (! in_array($schemeName, $availableSchemes, true)) {
-                    $fail("Security requirement '{$schemeName}' at {$path}[{$index}] references undefined security scheme. Available schemes: ".implode(', ', $availableSchemes));
+                    $fail('Security requirement references undefined security scheme. Available schemes: '.implode(', ', $availableSchemes), "{$path}.{$index}.{$schemeName}");
                 }
             }
         }

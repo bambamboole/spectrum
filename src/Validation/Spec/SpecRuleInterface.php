@@ -6,5 +6,8 @@ use Bambamboole\OpenApi\Objects\OpenApiDocument;
 
 interface SpecRuleInterface
 {
+    /**
+     * @param  \Closure(string,string,?ValidationSeverity):bool  $fail
+     */
     public function validate(OpenApiDocument $document, \Closure $fail): void;
 }

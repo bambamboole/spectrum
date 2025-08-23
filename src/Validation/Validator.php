@@ -3,6 +3,9 @@ namespace Bambamboole\OpenApi\Validation;
 
 use Bambamboole\OpenApi\Exceptions\ParseException;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
+use Bambamboole\OpenApi\Validation\Spec\RuleConfig;
+use Bambamboole\OpenApi\Validation\Spec\ValidationError;
+use Bambamboole\OpenApi\Validation\Spec\ValidationSeverity;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
@@ -39,15 +42,15 @@ class Validator
         }
     }
 
-    public static function validateDocument(OpenApiDocument $document, string|array $specRules): array
+    public static function validateDocument(OpenApiDocument $document, string|array $rules): array
     {
         $errors = [];
-        foreach (Arr::wrap($specRules) as $rule) {
-            if (is_string($rule)) {
-                $rule = new $rule;
-            }
-            $rule->validate($document, function ($message) use (&$errors) {
-                return $errors[] = $message;
+        foreach (Arr::wrap($rules) as $config) {
+            /** @var RuleConfig $config */
+            $rule = new $config->ruleClass;
+
+            $rule->validate($document, function ($message, $key, ?ValidationSeverity $severity = null) use (&$errors, $config) {
+                return $errors[] = new ValidationError($message, $key, $severity ?? $config->severity);
             });
         }
 
