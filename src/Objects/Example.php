@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * In all cases, the example value is expected to be compatible with the type schema of its associated value.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#example-object
+ */
 readonly class Example extends OpenApiObject
 {
     public static function rules(): array

@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * The Link object represents a possible design-time link for a response.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#link-object
+ */
 readonly class Link extends OpenApiObject
 {
     public static function rules(): array

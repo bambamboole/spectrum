@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * The Schema Object allows the definition of input and output data types.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#schema-object
+ */
 readonly class Schema extends OpenApiObject
 {
     public static function rules(): array

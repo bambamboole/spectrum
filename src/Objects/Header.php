@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * The Header Object follows the structure of the Parameter Object.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#header-object
+ */
 readonly class Header extends OpenApiObject
 {
     public static function rules(): array

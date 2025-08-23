@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Describes a single response from an API Operation.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#response-object
+ */
 readonly class Response extends OpenApiObject
 {
     public static function rules(): array

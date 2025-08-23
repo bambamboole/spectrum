@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Holds a set of reusable objects for different aspects of the OAS.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#components-object
+ */
 readonly class Components extends OpenApiObject
 {
     public static function rules(): array

@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Contact information for the exposed API.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#contact-object
+ */
 readonly class Contact extends OpenApiObject
 {
     public static function rules(): array

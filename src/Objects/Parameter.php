@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Describes a single operation parameter.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#parameter-object
+ */
 readonly class Parameter extends OpenApiObject
 {
     public static function rules(): array

@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Each Media Type Object provides schema and examples for the media type identified by its key.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#media-type-object
+ */
 readonly class MediaType extends OpenApiObject
 {
     public static function rules(): array

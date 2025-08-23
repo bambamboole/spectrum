@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Allows referencing an external resource for extended documentation.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#external-documentation-object
+ */
 readonly class ExternalDocs extends OpenApiObject
 {
     public static function rules(): array

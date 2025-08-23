@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Adds metadata to a single tag that is used by the Operation Object.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#tag-object
+ */
 readonly class Tag extends OpenApiObject
 {
     public static function rules(): array

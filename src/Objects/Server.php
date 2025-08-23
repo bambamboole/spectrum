@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * An object representing a Server.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#server-object
+ */
 readonly class Server extends OpenApiObject
 {
     public static function rules(): array

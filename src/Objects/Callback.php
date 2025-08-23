@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * A map of possible out-of band callbacks related to the parent operation.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#callback-object
+ */
 readonly class Callback extends OpenApiObject
 {
     public static function rules(): array

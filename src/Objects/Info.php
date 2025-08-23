@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * The Info Object provides metadata about the API.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#info-object
+ */
 readonly class Info extends OpenApiObject
 {
     public static function rules(): array

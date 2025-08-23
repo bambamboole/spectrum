@@ -2,6 +2,11 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
+/**
+ * Describes a single request body.
+ *
+ * @see https://spec.openapis.org/oas/v3.1.1.html#request-body-object
+ */
 readonly class RequestBody extends OpenApiObject
 {
     public static function rules(): array
