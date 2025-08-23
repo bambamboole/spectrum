@@ -5,7 +5,11 @@ namespace Bambamboole\OpenApi\Factories;
 use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Factories\Concerns\ValidatesOpenApiObjects;
 use Bambamboole\OpenApi\Objects\Components;
+use Bambamboole\OpenApi\Objects\Header;
+use Bambamboole\OpenApi\Objects\Parameter;
 use Bambamboole\OpenApi\Objects\Schema;
+
+use function collect;
 
 class ComponentsFactory
 {
@@ -26,10 +30,10 @@ class ComponentsFactory
         return new Components(
             schemas: $this->createSchemaArray($data['schemas'] ?? [], 'components.schemas'),
             responses: $data['responses'] ?? [],
-            parameters: $data['parameters'] ?? [],
+            parameters: $this->createParameters($data['parameters'] ?? []),
             examples: $data['examples'] ?? [],
             requestBodies: $data['requestBodies'] ?? [],
-            headers: $data['headers'] ?? [],
+            headers: $this->createHeaders($data['headers'] ?? []),
             securitySchemes: $securitySchemes,
             links: $data['links'] ?? [],
             callbacks: $data['callbacks'] ?? [],
@@ -84,6 +88,83 @@ class ComponentsFactory
             not: isset($data['not']) ? $this->createSchema($data['not']) : null,
             ref: $data['$ref'] ?? null,
         );
+    }
+
+    public function createParameter(array $data, string $keyPrefix = ''): Parameter
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createParameter($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, Parameter::class, $keyPrefix);
+
+        return new Parameter(
+            name: $data['name'],
+            in: $data['in'],
+            description: $data['description'] ?? null,
+            required: $data['required'] ?? false,
+            deprecated: $data['deprecated'] ?? false,
+            allowEmptyValue: $data['allowEmptyValue'] ?? null,
+            style: $data['style'] ?? null,
+            explode: $data['explode'] ?? null,
+            allowReserved: $data['allowReserved'] ?? null,
+            schema: isset($data['schema']) ? $this->createSchema($data['schema'], $keyPrefix.'.schema') : null,
+            example: $data['example'] ?? null,
+            examples: $data['examples'] ?? null,
+            content: $data['content'] ?? null,
+        );
+    }
+
+    private function createParameters(array $parameters): array
+    {
+        $parsed = [];
+        foreach ($parameters as $key => $parameter) {
+            $parsed[$key] = $this->createParameter($parameter, "components.parameters.{$key}");
+        }
+
+        return $parsed;
+    }
+
+    public function createHeader(array $data, string $keyPrefix = ''): Header
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createHeader($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, Header::class, $keyPrefix);
+
+        return new Header(
+            description: $data['description'] ?? null,
+            required: $data['required'] ?? false,
+            deprecated: $data['deprecated'] ?? false,
+            allowEmptyValue: $data['allowEmptyValue'] ?? null,
+            style: $data['style'] ?? null,
+            explode: $data['explode'] ?? null,
+            schema: isset($data['schema']) ? $this->createSchema($data['schema'], $keyPrefix.'.schema') : null,
+            example: $data['example'] ?? null,
+            examples: $data['examples'] ?? null,
+            content: $data['content'] ?? null,
+        );
+    }
+
+    private function createHeaders(array $headers): array
+    {
+        $parsed = [];
+        foreach ($headers as $key => $header) {
+            $parsed[$key] = $this->createHeader($header, "components.headers.{$key}");
+        }
+
+        return $parsed;
     }
 
     private function createSchemaProperties(?array $properties): ?array
