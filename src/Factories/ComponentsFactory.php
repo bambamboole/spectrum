@@ -4,13 +4,17 @@ namespace Bambamboole\OpenApi\Factories;
 
 use Bambamboole\OpenApi\Context\ParsingContext;
 use Bambamboole\OpenApi\Factories\Concerns\ValidatesOpenApiObjects;
+use Bambamboole\OpenApi\Objects\Callback;
 use Bambamboole\OpenApi\Objects\Components;
+use Bambamboole\OpenApi\Objects\Example;
 use Bambamboole\OpenApi\Objects\Header;
+use Bambamboole\OpenApi\Objects\Link;
 use Bambamboole\OpenApi\Objects\MediaType;
 use Bambamboole\OpenApi\Objects\Parameter;
 use Bambamboole\OpenApi\Objects\RequestBody;
 use Bambamboole\OpenApi\Objects\Response;
 use Bambamboole\OpenApi\Objects\Schema;
+use Bambamboole\OpenApi\Objects\Server;
 
 use function collect;
 
@@ -34,12 +38,12 @@ class ComponentsFactory
             schemas: $this->createSchemaArray($data['schemas'] ?? [], 'components.schemas'),
             responses: $this->createResponses($data['responses'] ?? []),
             parameters: $this->createParameters($data['parameters'] ?? []),
-            examples: $data['examples'] ?? [],
+            examples: $this->createExamples($data['examples'] ?? []),
             requestBodies: $this->createRequestBodies($data['requestBodies'] ?? []),
             headers: $this->createHeaders($data['headers'] ?? []),
             securitySchemes: $securitySchemes,
-            links: $data['links'] ?? [],
-            callbacks: $data['callbacks'] ?? [],
+            links: $this->createLinks($data['links'] ?? []),
+            callbacks: $this->createCallbacks($data['callbacks'] ?? []),
         );
     }
 
@@ -218,7 +222,7 @@ class ComponentsFactory
             description: $data['description'],
             headers: isset($data['headers']) ? $this->createHeaders($data['headers']) : null,
             content: isset($data['content']) ? $this->createMediaTypes($data['content'], $this->buildKeyPrefix($keyPrefix, 'content')) : null,
-            links: $data['links'] ?? null,
+            links: isset($data['links']) ? $this->createResponseLinks($data['links'], $this->buildKeyPrefix($keyPrefix, 'links')) : null,
         );
     }
 
@@ -302,6 +306,118 @@ class ComponentsFactory
         return collect($schemas)
             ->map(fn ($schema, $key) => $this->createSchema($schema, $this->buildKeyPrefix($keyPrefix, (string) $key)))
             ->all();
+    }
+
+    public function createLink(array $data, string $keyPrefix = ''): Link
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createLink($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, Link::class, $keyPrefix);
+
+        // Handle server object creation if present
+        $server = null;
+        if (isset($data['server'])) {
+            $server = new Server(
+                url: $data['server']['url'] ?? '',
+                description: $data['server']['description'] ?? null,
+                variables: $data['server']['variables'] ?? [],
+            );
+        }
+
+        return new Link(
+            operationRef: $data['operationRef'] ?? null,
+            operationId: $data['operationId'] ?? null,
+            parameters: $data['parameters'] ?? null,
+            requestBody: $data['requestBody'] ?? null,
+            description: $data['description'] ?? null,
+            server: $server,
+        );
+    }
+
+    public function createLinks(array $links): array
+    {
+        $parsed = [];
+        foreach ($links as $key => $link) {
+            $parsed[$key] = $this->createLink($link, "components.links.{$key}");
+        }
+
+        return $parsed;
+    }
+
+    private function createResponseLinks(array $links, string $keyPrefix = ''): array
+    {
+        $parsed = [];
+        foreach ($links as $key => $link) {
+            $parsed[$key] = $this->createLink($link, $this->buildKeyPrefix($keyPrefix, $key));
+        }
+
+        return $parsed;
+    }
+
+    public function createCallback(array $data, string $keyPrefix = ''): Callback
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createCallback($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, Callback::class, $keyPrefix);
+
+        return new Callback(
+            expressions: $data,
+        );
+    }
+
+    public function createCallbacks(array $callbacks): array
+    {
+        $parsed = [];
+        foreach ($callbacks as $key => $callback) {
+            $parsed[$key] = $this->createCallback($callback, "components.callbacks.{$key}");
+        }
+
+        return $parsed;
+    }
+
+    public function createExample(array $data, string $keyPrefix = ''): Example
+    {
+        // Handle $ref resolution first
+        if (isset($data['$ref'])) {
+            $resolvedData = $this->context->referenceResolver->resolve($data['$ref']);
+            if (is_array($resolvedData)) {
+                return $this->createExample($resolvedData, $keyPrefix);
+            }
+            throw new \InvalidArgumentException('Resolved reference must be an array');
+        }
+
+        $this->validate($data, Example::class, $keyPrefix);
+
+        return new Example(
+            summary: $data['summary'] ?? null,
+            description: $data['description'] ?? null,
+            value: $data['value'] ?? null,
+            externalValue: $data['externalValue'] ?? null,
+        );
+    }
+
+    public function createExamples(array $examples): array
+    {
+        $parsed = [];
+        foreach ($examples as $key => $example) {
+            $parsed[$key] = $this->createExample($example, "components.examples.{$key}");
+        }
+
+        return $parsed;
     }
 
     private function buildKeyPrefix(string $keyPrefix, string $key): string

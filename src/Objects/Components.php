@@ -26,6 +26,7 @@ readonly class Components extends OpenApiObject
         public array $responses = [],
         /** @var Parameter[] */
         public array $parameters = [],
+        /** @var Example[] */
         public array $examples = [],
         /** @var RequestBody[] */
         public array $requestBodies = [],
@@ -33,7 +34,9 @@ readonly class Components extends OpenApiObject
         public array $headers = [],
         /** @var SecurityScheme[] */
         public array $securitySchemes = [],
+        /** @var Link[] */
         public array $links = [],
+        /** @var Callback[] */
         public array $callbacks = [],
     ) {}
 }

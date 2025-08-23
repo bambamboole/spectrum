@@ -130,7 +130,7 @@ it('can parse response with all properties', function () {
     expect($response->content['application/json']->schema->properties)->toHaveKey('data');
     expect($response->content['application/json']->schema->properties)->toHaveKey('meta');
     expect($response->links)->toHaveKey('GetUserByUserId');
-    expect($response->links['GetUserByUserId']['operationRef'])->toBe('#/paths/~1users~1{userId}/get');
+    expect($response->links['GetUserByUserId']->operationRef)->toBe('#/paths/~1users~1{userId}/get');
 });
 
 it('can parse response with schema reference', function () {

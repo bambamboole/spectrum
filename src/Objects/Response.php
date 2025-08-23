@@ -16,8 +16,11 @@ readonly class Response extends OpenApiObject
 
     public function __construct(
         public string $description,
+        /** @var Header[]|null */
         public ?array $headers = null,
+        /** @var MediaType[]|null */
         public ?array $content = null,
+        /** @var Link[]|null */
         public ?array $links = null,
     ) {}
 }
