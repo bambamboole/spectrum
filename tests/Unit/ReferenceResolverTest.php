@@ -75,12 +75,12 @@ it('throws exception for non-existent reference', function () {
         ->toThrow(ReferenceResolutionException::class, 'Reference path not found: #/components/schemas/NonExistent');
 });
 
-it('throws exception for external references', function () {
+it('throws exception for external references when not enabled', function () {
     $document = ['components' => ['schemas' => []]];
     $resolver = new ReferenceResolver($document);
 
     expect(fn () => $resolver->resolve('external.yaml#/components/schemas/User'))
-        ->toThrow(ReferenceResolutionException::class, 'External references not supported');
+        ->toThrow(ReferenceResolutionException::class, 'Cannot resolve relative path without current file context');
 });
 
 it('caches resolved references for performance', function () {

@@ -33,7 +33,6 @@ readonly class OpenApiDocument extends OpenApiObject
 
     public static function fromArray(array $data): self
     {
-        // Initialize the ReferenceResolver with the full document before parsing
         ReferenceResolver::initialize($data);
 
         try {
@@ -58,7 +57,6 @@ readonly class OpenApiDocument extends OpenApiObject
                 externalDocs: $externalDocs,
             );
         } finally {
-            // Clear the ReferenceResolver instance after parsing
             ReferenceResolver::clear();
         }
     }

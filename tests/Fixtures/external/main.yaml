@@ -1,0 +1,29 @@
+openapi: 3.0.0
+info:
+  title: External Reference Test API
+  version: 1.0.0
+paths:
+  /users:
+    get:
+      responses:
+        '200':
+          $ref: './responses.json#/UserResponse'
+        '400':
+          $ref: './responses.json#/ErrorResponse'
+  /users/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: './schemas.yaml#/User'
+        '404':
+          $ref: './responses.json#/ErrorResponse'

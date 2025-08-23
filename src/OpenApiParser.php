@@ -37,17 +37,20 @@ class OpenApiParser
         return $this->parseArray(Yaml::parse($yaml));
     }
 
-    public function parseFile(string $filePath): OpenApiDocument
+    public function parseFile(string $filePath, array $options = []): OpenApiDocument
     {
         if (! $this->fs->exists($filePath)) {
             throw new InvalidArgumentException("File not found: {$filePath}");
         }
 
-        return match (Str::afterLast($filePath, '.')) {
-            'json' => $this->parseJson($this->fs->get($filePath)),
-            'yml', 'yaml' => $this->parseYaml($this->fs->get($filePath)),
+        $data = match (Str::afterLast($filePath, '.')) {
+            'json' => json_decode($this->fs->get($filePath), true, 512, JSON_THROW_ON_ERROR),
+            'yml', 'yaml' => Yaml::parse($this->fs->get($filePath)),
             default => throw new ParseException("Unsupported file type: {$filePath}"),
         };
+        ReferenceResolver::initialize($data, $filePath);
+
+        return $this->parseArray($data);
     }
 
     public function parseArray(array $data): OpenApiDocument

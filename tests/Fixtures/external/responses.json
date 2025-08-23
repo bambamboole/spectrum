@@ -1,0 +1,22 @@
+{
+  "UserResponse": {
+    "description": "User response",
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "./schemas.yaml#/User"
+        }
+      }
+    }
+  },
+  "ErrorResponse": {
+    "description": "Error response",
+    "content": {
+      "application/json": {
+        "schema": {
+          "$ref": "./schemas.yaml#/Error"
+        }
+      }
+    }
+  }
+}

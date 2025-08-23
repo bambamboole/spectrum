@@ -1,0 +1,21 @@
+User:
+  type: object
+  properties:
+    id:
+      type: integer
+    name:
+      type: string
+    email:
+      type: string
+      format: email
+
+Error:
+  type: object
+  required:
+    - code
+    - message
+  properties:
+    code:
+      type: integer
+    message:
+      type: string

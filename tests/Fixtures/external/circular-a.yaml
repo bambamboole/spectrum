@@ -1,0 +1,7 @@
+TypeA:
+  type: object
+  properties:
+    id:
+      type: integer
+    relatedB:
+      $ref: './circular-b.yaml#/TypeB'

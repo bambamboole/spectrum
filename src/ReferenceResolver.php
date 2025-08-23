@@ -3,6 +3,8 @@
 namespace Bambamboole\OpenApi;
 
 use Bambamboole\OpenApi\Exceptions\ReferenceResolutionException;
+use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Yaml\Yaml;
 
 class ReferenceResolver
 {
@@ -12,13 +14,20 @@ class ReferenceResolver
 
     private array $resolutionStack = [];
 
+    private array $fileCache = [];
+
     public function __construct(
-        private readonly array $document
+        private readonly array $document,
+        private readonly ?string $currentFilePath = null,
+        private readonly Filesystem $filesystem = new Filesystem
     ) {}
 
-    public static function initialize(array $data): void
+    public static function initialize(array $data, ?string $currentFilePath = null): void
     {
-        self::$instance = new self($data);
+        if (self::$instance) {
+            return;
+        }
+        self::$instance = new self($data, $currentFilePath);
     }
 
     public static function resolveRef(array $data): array
@@ -38,33 +47,48 @@ class ReferenceResolver
 
     public static function clear(): void
     {
+        if (self::$instance) {
+            self::$instance->fileCache = [];
+        }
         self::$instance = null;
     }
 
     public function resolve(string $ref): mixed
     {
-        // Check cache first
-        if (isset($this->resolvedCache[$ref])) {
-            return $this->resolvedCache[$ref];
+        $fullRef = $this->buildFullReference($ref);
+
+        if (isset($this->resolvedCache[$fullRef])) {
+            return $this->resolvedCache[$fullRef];
         }
 
-        // Check for circular reference
-        if ($this->isCircularReference($ref)) {
+        if ($this->isCircularReference($fullRef)) {
             throw new ReferenceResolutionException("Circular reference detected: {$ref}");
         }
 
-        // Add to resolution stack
-        $this->resolutionStack[] = $ref;
+        $this->resolutionStack[] = $fullRef;
 
         try {
             $resolved = $this->resolveReference($ref);
-            $this->resolvedCache[$ref] = $resolved;
+            $this->resolvedCache[$fullRef] = $resolved;
 
             return $resolved;
         } finally {
-            // Remove from resolution stack
             array_pop($this->resolutionStack);
         }
+    }
+
+    private function buildFullReference(string $ref): string
+    {
+        if (str_starts_with($ref, '#/')) {
+            $currentFile = $this->currentFilePath ?? '';
+
+            return $currentFile.$ref;
+        }
+
+        [$filePath, $jsonPointer] = $this->parseExternalReference($ref);
+        $resolvedPath = $this->resolveFilePath($filePath);
+
+        return $resolvedPath.'#'.$jsonPointer;
     }
 
     public function isCircularReference(string $ref): bool
@@ -74,16 +98,110 @@ class ReferenceResolver
 
     private function resolveReference(string $ref): mixed
     {
-        // Only support local references for now (starting with #/)
-        if (! str_starts_with($ref, '#/')) {
-            throw new ReferenceResolutionException("External references not supported: {$ref}");
+        if (str_starts_with($ref, '#/')) {
+            $pointer = substr($ref, 2);
+            $path = $this->parseJsonPointer($pointer);
+
+            return $this->resolveJsonPointer($path, $this->document);
         }
 
-        // Parse JSON Pointer (RFC 6901)
-        $pointer = substr($ref, 2); // Remove '#/' prefix
-        $path = $this->parseJsonPointer($pointer);
+        return $this->resolveExternalReference($ref);
+    }
 
-        return $this->resolveJsonPointer($path);
+    private function resolveExternalReference(string $ref): mixed
+    {
+        [$filePath, $jsonPointer] = $this->parseExternalReference($ref);
+        $resolvedPath = $this->resolveFilePath($filePath);
+
+        $this->validateFilePath($resolvedPath);
+        $externalDocument = $this->loadExternalFile($resolvedPath);
+
+        if ($jsonPointer === '') {
+            return $externalDocument;
+        }
+
+        $path = $this->parseJsonPointer(substr($jsonPointer, 1));
+
+        return $this->resolveJsonPointer($path, $externalDocument);
+    }
+
+    private function parseExternalReference(string $ref): array
+    {
+        $parts = explode('#', $ref, 2);
+
+        return [$parts[0], $parts[1] ?? ''];
+    }
+
+    private function resolveFilePath(string $filePath): string
+    {
+        if (str_starts_with($filePath, '/')) {
+            return $filePath;
+        }
+
+        if (! $this->currentFilePath) {
+            throw new ReferenceResolutionException("Cannot resolve relative path without current file context: {$filePath}");
+        }
+
+        $resolvedPath = dirname($this->currentFilePath).'/'.$filePath;
+
+        return str_replace('//', '/', $resolvedPath);
+    }
+
+    private function validateFilePath(string $path): void
+    {
+        if (! file_exists($path)) {
+            throw new ReferenceResolutionException("File not found: {$path}");
+        }
+
+        $realPath = realpath($path);
+        $extension = strtolower(pathinfo($realPath, PATHINFO_EXTENSION));
+        if (! in_array($extension, ['json', 'yaml', 'yml'])) {
+            throw new ReferenceResolutionException("Unsupported file type: {$path}");
+        }
+
+        if (str_contains($path, '../')) {
+            $normalizedPath = realpath($path);
+            if ($this->currentFilePath) {
+                $currentDir = dirname(realpath($this->currentFilePath));
+                if (! str_starts_with($normalizedPath, $currentDir)) {
+                    throw new ReferenceResolutionException("Directory traversal not allowed: {$path}");
+                }
+            }
+        }
+    }
+
+    private function loadExternalFile(string $path): array
+    {
+        $realPath = realpath($path);
+
+        if (isset($this->fileCache[$realPath])) {
+            return $this->fileCache[$realPath];
+        }
+
+        if (! $this->filesystem->exists($path)) {
+            throw new ReferenceResolutionException("File not found: {$path}");
+        }
+
+        $content = $this->filesystem->get($path);
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        try {
+            $data = match ($extension) {
+                'json' => json_decode($content, true, 512, JSON_THROW_ON_ERROR),
+                'yaml', 'yml' => Yaml::parse($content),
+                default => throw new ReferenceResolutionException("Unsupported file type: {$path}")
+            };
+        } catch (\Exception $e) {
+            throw new ReferenceResolutionException("Failed to parse file {$path}: ".$e->getMessage());
+        }
+
+        if (! is_array($data)) {
+            throw new ReferenceResolutionException("External file must contain an object or array: {$path}");
+        }
+
+        $this->fileCache[$realPath] = $data;
+
+        return $data;
     }
 
     private function parseJsonPointer(string $pointer): array
@@ -98,9 +216,9 @@ class ReferenceResolver
         );
     }
 
-    private function resolveJsonPointer(array $path): mixed
+    private function resolveJsonPointer(array $path, array $document): mixed
     {
-        $current = $this->document;
+        $current = $document;
 
         foreach ($path as $segment) {
             if (! is_array($current) || ! array_key_exists($segment, $current)) {
