@@ -9,11 +9,6 @@ readonly class ValidationError
         public ValidationSeverity $severity = ValidationSeverity::ERROR,
     ) {}
 
-    public function isBlocking(): bool
-    {
-        return $this->severity->isBlocking();
-    }
-
     public function toArray(): array
     {
         return [

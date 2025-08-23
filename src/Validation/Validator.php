@@ -6,11 +6,11 @@ use Bambamboole\OpenApi\Exceptions\ParseException;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\Validation\Spec\RuleConfig;
 use Bambamboole\OpenApi\Validation\Spec\ValidationError;
+use Bambamboole\OpenApi\Validation\Spec\ValidationResult;
 use Bambamboole\OpenApi\Validation\Spec\ValidationSeverity;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
@@ -44,9 +44,9 @@ class Validator
         }
     }
 
-    public static function validateDocument(OpenApiDocument $document, string|array $rules): array
+    public static function validateDocument(OpenApiDocument $document, string|array $rules): ValidationResult
     {
-        $errors = [];
+        $result = new ValidationResult;
         foreach (Arr::wrap($rules) as $config) {
             if ($config instanceof RuleConfig) {
                 $rule = new $config->ruleClass;
@@ -56,20 +56,13 @@ class Validator
                 $defaultSeverity = ValidationSeverity::ERROR;
             }
 
-            $failCallback = function (string $message, string $path, ?ValidationSeverity $severity = null) use (&$errors, $defaultSeverity) {
-                $errors[] = new ValidationError($message, $path, $severity ?? $defaultSeverity);
+            $failCallback = function (string $message, string $path, ?ValidationSeverity $severity = null) use ($result, $defaultSeverity) {
+                $result->add(new ValidationError($message, $path, $severity ?? $defaultSeverity));
             };
 
             $rule->validate($document, $failCallback);
         }
 
-        return collect($errors)
-            ->groupBy('severity')
-            ->map(fn (Collection $errors) => $errors
-                ->groupBy('path')
-                ->map(fn (Collection $errors) => $errors->pluck('message')->all())
-                ->all()
-            )
-            ->all();
+        return $result;
     }
 }

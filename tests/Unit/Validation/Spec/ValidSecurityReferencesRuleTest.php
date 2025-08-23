@@ -62,7 +62,7 @@ it('passes validation when all security references are valid', function () {
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors)->toBeEmpty();
+    expect($errors->getErrors())->toBeEmpty();
 });
 
 it('fails validation when global security references undefined scheme', function () {
@@ -84,8 +84,10 @@ it('fails validation when global security references undefined scheme', function
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors['error'])->toHaveKey('security.0.undefined_scheme');
-    expect($errors['error']['security.0.undefined_scheme'])->toBe(['Security requirement references undefined security scheme. Available schemes: api_key']);
+    $errorList = $errors->getErrors();
+    expect($errorList)->toHaveCount(1);
+    expect($errorList[0]->path)->toBe('security.0.undefined_scheme');
+    expect($errorList[0]->message)->toBe('Security requirement references undefined security scheme. Available schemes: api_key');
 });
 
 it('fails validation when operation security references undefined scheme', function () {
@@ -124,7 +126,9 @@ it('fails validation when operation security references undefined scheme', funct
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors['error'])->toHaveKeys(['paths./users.get.security.0.missing_scheme', 'paths./users.post.security.1.another_missing']);
+    $errorList = $errors->getErrors();
+    expect($errorList)->toHaveCount(2);
+    expect(collect($errorList)->pluck('path')->toArray())->toContain('paths./users.get.security.0.missing_scheme', 'paths./users.post.security.1.another_missing');
 });
 
 it('fails validation when no security schemes are defined but security requirements exist', function () {
@@ -146,7 +150,9 @@ it('fails validation when no security schemes are defined but security requireme
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors['error'])->toHaveKey('security.0.api_key');
+    $errorList = $errors->getErrors();
+    expect($errorList)->toHaveCount(1);
+    expect($errorList[0]->path)->toBe('security.0.api_key');
 });
 
 it('passes validation when no security requirements are defined', function () {
@@ -165,7 +171,7 @@ it('passes validation when no security requirements are defined', function () {
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors)->toBeEmpty();
+    expect($errors->getErrors())->toBeEmpty();
 });
 
 it('passes validation when operations have no security requirements', function () {
@@ -200,7 +206,7 @@ it('passes validation when operations have no security requirements', function (
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors)->toBeEmpty();
+    expect($errors->getErrors())->toBeEmpty();
 });
 
 it('handles multiple security requirements with mixed validity', function () {
@@ -250,7 +256,9 @@ it('handles multiple security requirements with mixed validity', function () {
 
     $errors = Validator::validateDocument($document, ValidSecurityReferencesRule::class);
 
-    expect($errors['error'])->toHaveCount(2);
-    expect($errors['error'])->toHaveKeys(['security.1.invalid_global', 'paths./users.get.security.1.missing_scheme']);
-    expect($errors['error']['security.1.invalid_global'])->toBe(['Security requirement references undefined security scheme. Available schemes: api_key, oauth2, valid_scheme']);
+    $errorList = $errors->getErrors();
+    expect($errorList)->toHaveCount(2);
+    expect(collect($errorList)->pluck('path')->toArray())->toContain('security.1.invalid_global', 'paths./users.get.security.1.missing_scheme');
+    $globalError = collect($errorList)->firstWhere('path', 'security.1.invalid_global');
+    expect($globalError->message)->toBe('Security requirement references undefined security scheme. Available schemes: api_key, oauth2, valid_scheme');
 });
