@@ -4,12 +4,5 @@ use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal OpenAPI schema')
-    ->expect(fn () => OpenApiParser::make()->parseArray([
-        'openapi' => '3.0.0',
-        'info' => [
-            'title' => 'Minimal API',
-            'version' => '1.0.0',
-        ],
-        'paths' => [],
-    ]))
+    ->expect(fn () => OpenApiParser::make()->parseArray($this->schema()))
     ->toBeInstanceOf(OpenApiDocument::class);

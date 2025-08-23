@@ -4,13 +4,12 @@ use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse OpenAPI schema with components')
-    ->expect(fn () => OpenApiParser::make()->parseArray([
+    ->expect(fn () => OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.3',
         'info' => [
             'title' => 'API with Components',
             'version' => '1.0.0',
         ],
-        'paths' => [],
         'servers' => [
             [
                 'url' => 'https://api.example.com/v1',
@@ -72,5 +71,5 @@ it('can parse OpenAPI schema with components')
                 ],
             ],
         ],
-    ]))
+    ])))
     ->toBeInstanceOf(OpenApiDocument::class);

@@ -2,8 +2,10 @@
 namespace Bambamboole\OpenApi\Validation;
 
 use Bambamboole\OpenApi\Exceptions\ParseException;
+use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Arr;
 use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
@@ -35,5 +37,20 @@ class Validator
 
             throw ParseException::withMessages($messages);
         }
+    }
+
+    public static function validateDocument(OpenApiDocument $document, string|array $specRules): array
+    {
+        $errors = [];
+        foreach (Arr::wrap($specRules) as $rule) {
+            if (is_string($rule)) {
+                $rule = new $rule;
+            }
+            $rule->validate($document, function ($message) use (&$errors) {
+                return $errors[] = $message;
+            });
+        }
+
+        return $errors;
     }
 }

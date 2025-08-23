@@ -5,13 +5,12 @@ use Bambamboole\OpenApi\Objects\Schema;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('resolves references in existing SchemaWithComponents test case', function () {
-    $document = OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.3',
         'info' => [
             'title' => 'API with Components',
             'version' => '1.0.0',
         ],
-        'paths' => [],
         'servers' => [
             [
                 'url' => 'https://api.example.com/v1',
@@ -73,7 +72,7 @@ it('resolves references in existing SchemaWithComponents test case', function ()
                 ],
             ],
         ],
-    ]);
+    ]));
 
     expect($document)->toBeInstanceOf(OpenApiDocument::class);
 

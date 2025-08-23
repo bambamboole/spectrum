@@ -4,7 +4,7 @@ use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse OpenAPI schema with security schemes')
-    ->expect(fn () => OpenApiParser::make()->parseArray([
+    ->expect(fn () => OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Security Example API',
@@ -64,5 +64,5 @@ it('can parse OpenAPI schema with security schemes')
             ['OAuth2Auth' => ['read', 'write']],
             ['OpenIdConnect' => []],
         ],
-    ]))
+    ])))
     ->toBeInstanceOf(OpenApiDocument::class);

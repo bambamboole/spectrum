@@ -4,7 +4,7 @@ use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse complete OpenAPI schema with full info section')
-    ->expect(fn () => OpenApiParser::make()->parseArray([
+    ->expect(fn () => OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.1.0',
         'info' => [
             'title' => 'Complete API',
@@ -21,10 +21,9 @@ it('can parse complete OpenAPI schema with full info section')
                 'url' => 'https://opensource.org/licenses/MIT',
             ],
         ],
-        'paths' => [],
         'externalDocs' => [
             'description' => 'Find more info here',
             'url' => 'https://example.com/docs',
         ],
-    ]))
+    ])))
     ->toBeInstanceOf(OpenApiDocument::class);

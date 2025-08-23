@@ -5,13 +5,12 @@ use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse basic header in components', function () {
-    $document = OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Header Test API',
             'version' => '1.0.0',
         ],
-        'paths' => [],
         'components' => [
             'headers' => [
                 'X-Rate-Limit' => [
@@ -22,7 +21,7 @@ it('can parse basic header in components', function () {
                 ],
             ],
         ],
-    ]);
+    ]));
 
     expect($document)->toBeInstanceOf(OpenApiDocument::class);
     expect($document->components->headers)->toHaveKey('X-Rate-Limit');

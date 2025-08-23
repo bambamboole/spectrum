@@ -5,7 +5,7 @@ use Bambamboole\OpenApi\Objects\Operation;
 use Bambamboole\OpenApi\Objects\PathItem;
 
 it('can parse complete OpenAPI document with paths and operations', function () {
-    $document = \Bambamboole\OpenApi\OpenApiParser::make()->parseArray([
+    $document = \Bambamboole\OpenApi\OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.3',
         'info' => [
             'title' => 'User Management API',
@@ -224,7 +224,7 @@ it('can parse complete OpenAPI document with paths and operations', function () 
         'security' => [
             ['BearerAuth' => []],
         ],
-    ]);
+    ]));
 
     // Verify document structure
     expect($document)->toBeInstanceOf(OpenApiDocument::class);

@@ -5,13 +5,12 @@ use Bambamboole\OpenApi\Objects\Schema;
 use Bambamboole\OpenApi\OpenApiParser;
 
 it('can resolve schema references in components', function () {
-    $document = OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Reference Test API',
             'version' => '1.0.0',
         ],
-        'paths' => [],
         'components' => [
             'schemas' => [
                 'User' => [
@@ -27,7 +26,7 @@ it('can resolve schema references in components', function () {
                 ],
             ],
         ],
-    ]);
+    ]));
 
     expect($document)->toBeInstanceOf(OpenApiDocument::class);
 
@@ -43,13 +42,12 @@ it('can resolve schema references in components', function () {
 });
 
 it('can resolve nested schema references', function () {
-    $document = OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Nested Reference Test API',
             'version' => '1.0.0',
         ],
-        'paths' => [],
         'components' => [
             'schemas' => [
                 'BasicUser' => [
@@ -68,7 +66,7 @@ it('can resolve nested schema references', function () {
                 ],
             ],
         ],
-    ]);
+    ]));
 
     expect($document)->toBeInstanceOf(OpenApiDocument::class);
 
@@ -87,13 +85,12 @@ it('can resolve nested schema references', function () {
 });
 
 it('can resolve references in array items', function () {
-    $document = OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Array Reference Test API',
             'version' => '1.0.0',
         ],
-        'paths' => [],
         'components' => [
             'schemas' => [
                 'User' => [
@@ -109,7 +106,7 @@ it('can resolve references in array items', function () {
                 ],
             ],
         ],
-    ]);
+    ]));
 
     expect($document)->toBeInstanceOf(OpenApiDocument::class);
 
