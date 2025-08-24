@@ -1,7 +1,9 @@
 {
     "name": "bambamboole/spectrum",
-    "description": "A php package which provides an OpenAPI parser and validator",
+    "description": "A php CLI tool which provides an OpenAPI referencer, parser and validator",
     "keywords": [
+        "spectrum",
+        "cli",
         "openapi",
         "validator"
     ],

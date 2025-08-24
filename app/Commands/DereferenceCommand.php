@@ -18,6 +18,7 @@ class DereferenceCommand extends Command
                             {--format= : Output format (json, yaml) - defaults to input format}
                             {--output= : Output file path (default: stdout)}';
 
+    protected $aliases = ['deref'];
     /**
      * The console command description.
      *
