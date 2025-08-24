@@ -4,6 +4,11 @@ namespace Bambamboole\OpenApi\Validation\Spec;
 
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 
+#[RuleAttribute(
+    name: 'required-fields',
+    description: 'Validates that required fields are present and follow best practices',
+    defaultSeverity: ValidationSeverity::WARNING
+)]
 class RequiredFieldsRule implements SpecRuleInterface
 {
     public function validate(OpenApiDocument $document, \Closure $fail): void

@@ -37,4 +37,19 @@ class ValidationResult
     {
         return array_filter($this->errors, fn (ValidationError $error) => $error->severity === ValidationSeverity::INFO);
     }
+
+    public function hasErrors(): bool
+    {
+        return ! empty($this->getErrors());
+    }
+
+    public function hasWarnings(): bool
+    {
+        return ! empty($this->getWarnings());
+    }
+
+    public function hasInfo(): bool
+    {
+        return ! empty($this->getInfo());
+    }
 }

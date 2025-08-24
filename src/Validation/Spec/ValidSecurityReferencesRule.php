@@ -4,6 +4,11 @@ namespace Bambamboole\OpenApi\Validation\Spec;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\Objects\Security;
 
+#[RuleAttribute(
+    name: 'valid-security-references',
+    description: 'Validates that security references point to valid security schemes',
+    defaultSeverity: ValidationSeverity::ERROR
+)]
 class ValidSecurityReferencesRule implements SpecRuleInterface
 {
     public function validate(OpenApiDocument $document, \Closure $fail): void

@@ -5,6 +5,11 @@ namespace Bambamboole\OpenApi\Validation\Spec;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Illuminate\Support\Str;
 
+#[RuleAttribute(
+    name: 'path-parameters',
+    description: 'Validates that path parameters are correctly defined and consistent',
+    defaultSeverity: ValidationSeverity::ERROR
+)]
 class PathParametersRule implements SpecRuleInterface
 {
     public function validate(OpenApiDocument $document, \Closure $fail): void

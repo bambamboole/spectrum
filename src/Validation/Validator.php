@@ -5,6 +5,7 @@ namespace Bambamboole\OpenApi\Validation;
 use Bambamboole\OpenApi\Exceptions\ParseException;
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 use Bambamboole\OpenApi\Validation\Spec\RuleConfig;
+use Bambamboole\OpenApi\Validation\Spec\RulesetLoader;
 use Bambamboole\OpenApi\Validation\Spec\ValidationError;
 use Bambamboole\OpenApi\Validation\Spec\ValidationResult;
 use Bambamboole\OpenApi\Validation\Spec\ValidationSeverity;
@@ -85,5 +86,28 @@ class Validator
         }
 
         return $result;
+    }
+
+    public static function validateWithRuleset(OpenApiDocument $document, string $rulesetPath): ValidationResult
+    {
+        $loader = new RulesetLoader;
+        $ruleConfigs = $loader->loadFromFile($rulesetPath);
+
+        return self::validateDocument($document, $ruleConfigs);
+    }
+
+    public static function validateWithRulesetArray(OpenApiDocument $document, array $rulesetData): ValidationResult
+    {
+        $loader = new RulesetLoader;
+        $ruleConfigs = $loader->loadFromArray($rulesetData);
+
+        return self::validateDocument($document, $ruleConfigs);
+    }
+
+    public static function getAvailableRules(): array
+    {
+        $loader = new RulesetLoader;
+
+        return $loader->getRegisteredRules();
     }
 }

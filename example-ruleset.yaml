@@ -1,0 +1,26 @@
+# OpenAPI Validation Ruleset
+# Based on Spectral format but simplified for this parser
+
+# Example: Strict validation ruleset
+rules:
+  required-fields:
+  path-parameters:
+  response-codes:
+  valid-security-references:
+
+# Example: Relaxed validation (disable some rules)
+# rules:
+#   required-fields:
+#     severity: info  # Downgrade to info level
+#     enabled: true
+#   
+#   path-parameters:
+#     severity: error
+#     enabled: true
+#   
+#   response-codes:
+#     enabled: false  # Disable response code validation
+#   
+#   valid-security-references:
+#     severity: error
+#     enabled: true

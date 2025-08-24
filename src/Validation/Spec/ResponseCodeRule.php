@@ -4,6 +4,11 @@ namespace Bambamboole\OpenApi\Validation\Spec;
 
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
 
+#[RuleAttribute(
+    name: 'response-codes',
+    description: 'Validates HTTP response codes follow standards',
+    defaultSeverity: ValidationSeverity::WARNING
+)]
 class ResponseCodeRule implements SpecRuleInterface
 {
     private const VALID_STATUS_CODES = [
