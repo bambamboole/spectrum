@@ -1,0 +1,36 @@
+openapi: 3.1.1
+info:
+  title: Test API
+  version: 1.0.0
+  description: A test API for validation
+paths:
+  /users:
+    get:
+      summary: Get users
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: User not found

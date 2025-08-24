@@ -1,0 +1,10 @@
+rules:
+  required-fields:
+    enabled: true
+    severity: error
+  path-parameters:
+    enabled: true
+    severity: error
+  response-codes:
+    enabled: true
+    severity: warning
