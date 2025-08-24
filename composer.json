@@ -1,62 +1,74 @@
 {
-  "name": "bambamboole/php-openapi",
-  "description": "A php package which provides an OpenAPI parser and validator",
-  "keywords": [
-    "openapi",
-    "validator"
-  ],
-  "homepage": "https://github.com/bambamboole/php-openapi",
-  "license": "MIT",
-  "type": "library",
-  "authors": [
-    {
-      "name": "Manuel Christlieb",
-      "email": "manuel@christlieb.eu"
-    }
-  ],
-  "require": {
-    "php": "^8.2",
-    "illuminate/http": "^10.0 || ^11.0 || ^12.0",
-    "illuminate/validation": "^10.0 || ^11.0 || ^12.0",
-    "symfony/yaml": "^7.3"
-  },
-  "require-dev": {
-    "laravel/pint": "^1.8",
-    "pestphp/pest": "^3.7",
-    "pestphp/pest-plugin-type-coverage": "^3.6",
-    "phpstan/phpstan": "^2.1",
-    "symfony/var-dumper": "^7.3"
-  },
-  "autoload": {
-    "psr-4": {
-      "Bambamboole\\OpenApi\\": "src"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Bambamboole\\OpenApi\\Tests\\": "tests"
-    }
-  },
-  "scripts": {
-    "pint": "vendor/bin/pint",
-    "test": "vendor/bin/pest",
-    "test:coverage": "vendor/bin/pest --coverage-html coverage",
-    "test:ci": "vendor/bin/pest --coverage-clover coverage.xml",
-    "phpstan:analyse": "vendor/bin/phpstan analyse --ansi --memory-limit=4G",
-    "phpstan:baseline": "vendor/bin/phpstan analyse --generate-baseline --memory-limit=4G",
-    "lint": [
-      "@php vendor/bin/pint"
+    "name": "bambamboole/spectrum",
+    "description": "A php package which provides an OpenAPI parser and validator",
+    "keywords": [
+        "openapi",
+        "validator"
     ],
-    "all": [
-      "@lint",
-      "@phpstan:analyse",
-      "@test"
+    "homepage": "https://github.com/bambamboole/php-openapi",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Manuel Christlieb",
+            "email": "manuel@christlieb.eu"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/http": "^12.25",
+        "illuminate/translation": "^12.25",
+        "illuminate/validation": "^12.25",
+        "laravel-zero/framework": "^12.0",
+        "symfony/yaml": "^7.3"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.22",
+        "mockery/mockery": "^1.6.12",
+        "pestphp/pest": "^3.8.2",
+        "pestphp/pest-plugin-type-coverage": "^3.6",
+        "phpstan/phpstan": "^2.1",
+        "symfony/var-dumper": "^7.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "pint": "vendor/bin/pint",
+        "test": "vendor/bin/pest",
+        "test:coverage": "vendor/bin/pest --coverage-html coverage",
+        "test:ci": "vendor/bin/pest --coverage-clover coverage.xml",
+        "phpstan:analyse": "vendor/bin/phpstan analyse --ansi --memory-limit=4G",
+        "phpstan:baseline": "vendor/bin/phpstan analyse --generate-baseline --memory-limit=4G",
+        "lint": [
+            "@php vendor/bin/pint"
+        ],
+        "all": [
+            "@lint",
+            "@phpstan:analyse",
+            "@test"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "bin": [
+        "spectrum"
     ]
-  },
-  "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "pestphp/pest-plugin": true
-    }
-  }
 }

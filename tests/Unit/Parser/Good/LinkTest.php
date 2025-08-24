@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\Link;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\Link;
+use App\OpenApiParser;
 
 it('can parse minimal link with operationRef only', function () {
 

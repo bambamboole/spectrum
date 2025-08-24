@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Validation\Spec\RequiredFieldsRule;
-use Bambamboole\OpenApi\Validation\Validator;
+use App\Objects\OpenApiDocument;
+use App\Validation\Spec\RequiredFieldsRule;
+use App\Validation\Validator;
 
 it('passes validation when all best practices are followed', function () {
     $document = OpenApiDocument::fromArray($this->schema([

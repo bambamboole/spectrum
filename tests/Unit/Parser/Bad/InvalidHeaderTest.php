@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Exceptions\ParseException;
+use App\Exceptions\ParseException;
+use App\OpenApiParser;
 
 it('rejects header with empty description', function () {
     $this->expectSchema([
@@ -49,7 +50,7 @@ it('rejects header with empty style', function () {
 });
 
 it('accepts header with valid optional fields', function () {
-    $document = \Bambamboole\OpenApi\OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Valid Header API',
@@ -77,7 +78,7 @@ it('accepts header with valid optional fields', function () {
 });
 
 it('accepts header with minimal properties', function () {
-    $document = \Bambamboole\OpenApi\OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Minimal Header API',
@@ -103,7 +104,7 @@ it('accepts header with minimal properties', function () {
 });
 
 it('accepts header with no schema (content-based)', function () {
-    $document = \Bambamboole\OpenApi\OpenApiParser::make()->parseArray([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
         'info' => [
             'title' => 'Content Header API',

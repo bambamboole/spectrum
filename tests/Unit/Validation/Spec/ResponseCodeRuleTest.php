@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Validation\Spec\ResponseCodeRule;
-use Bambamboole\OpenApi\Validation\Validator;
+use App\Objects\OpenApiDocument;
+use App\Validation\Spec\ResponseCodeRule;
+use App\Validation\Validator;
 
 it('passes validation with standard HTTP status codes', function () {
     $document = OpenApiDocument::fromArray($this->schema([

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Objects\PathItem;
+use App\Exceptions\ParseException;
+use App\Objects\PathItem;
 
 it('rejects path item with empty summary', function () {
     try {

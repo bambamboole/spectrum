@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\Example;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\Example;
+use App\OpenApiParser;
 
 it('can parse minimal example with value only', function () {
 

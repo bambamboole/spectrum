@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\MediaType;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\MediaType;
+use App\OpenApiParser;
 
 it('can parse basic media type with schema', function () {
     $mediaType = MediaType::fromArray([

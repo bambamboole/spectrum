@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\Header;
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\Header;
+use App\Objects\OpenApiDocument;
+use App\OpenApiParser;
 
 it('can parse basic header in components', function () {
     $document = OpenApiParser::make()->parseArray($this->schema([

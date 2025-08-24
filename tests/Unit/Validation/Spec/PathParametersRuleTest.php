@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Validation\Spec\PathParametersRule;
-use Bambamboole\OpenApi\Validation\Validator;
+use App\Objects\OpenApiDocument;
+use App\Validation\Spec\PathParametersRule;
+use App\Validation\Validator;
 
 it('passes validation when path parameters are correctly defined', function () {
     $document = OpenApiDocument::fromArray($this->schema([

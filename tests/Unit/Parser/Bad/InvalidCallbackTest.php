@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\Callback;
+use App\Objects\Callback;
 
 it('accepts callback with empty expressions', function () {
 

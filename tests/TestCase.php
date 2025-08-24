@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
-namespace Bambamboole\OpenApi\Tests;
+namespace Tests;
 
-use Bambamboole\OpenApi\OpenApiParser;
+use App\OpenApiParser;
+use LaravelZero\Framework\Testing\TestCase as BaseTestCase;
 use Pest\Expectation;
 
-class TestCase extends \PHPUnit\Framework\TestCase
+class TestCase extends BaseTestCase
 {
     public function providesGoodTestSchemas() {}
 

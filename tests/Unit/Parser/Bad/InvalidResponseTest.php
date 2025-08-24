@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
-use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Objects\Response;
+use App\Exceptions\ParseException;
+use App\Objects\Response;
 
 it('rejects response missing required description', function () {
 

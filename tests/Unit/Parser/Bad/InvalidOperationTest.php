@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Objects\Operation;
+use App\Exceptions\ParseException;
+use App\Objects\Operation;
 
 it('rejects operation missing required responses', function () {
     try {

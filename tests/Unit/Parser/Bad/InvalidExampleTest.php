@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
-use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Objects\Example;
+use App\Exceptions\ParseException;
+use App\Objects\Example;
 
 it('rejects example with empty summary', function () {
 

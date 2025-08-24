@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\Response;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\Response;
+use App\OpenApiParser;
 
 it('can parse minimal response with description only', function () {
     $response = Response::fromArray([

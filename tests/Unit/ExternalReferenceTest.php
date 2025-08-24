@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\OpenApiParser;
+use App\OpenApiParser;
 
 it('can resolve external file references through parser', function () {
     $parser = OpenApiParser::make();

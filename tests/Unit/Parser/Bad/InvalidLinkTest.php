@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
-use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Objects\Link;
+use App\Exceptions\ParseException;
+use App\Objects\Link;
 
 it('rejects link with empty operationRef', function () {
 

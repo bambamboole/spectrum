@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Validation\Spec\ValidSecurityReferencesRule;
-use Bambamboole\OpenApi\Validation\Validator;
+use App\Objects\OpenApiDocument;
+use App\Validation\Spec\ValidSecurityReferencesRule;
+use App\Validation\Validator;
 
 it('passes validation when all security references are valid', function () {
     $document = OpenApiDocument::fromArray($this->schema([

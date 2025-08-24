@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Exceptions\ParseException;
+use App\Exceptions\ParseException;
 
 it('rejects schema missing OpenAPI version', function () {
     $this->expectSchema([

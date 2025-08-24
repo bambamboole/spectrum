@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Objects\Schema;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\OpenApiDocument;
+use App\Objects\Schema;
+use App\OpenApiParser;
 
 it('resolves references in existing SchemaWithComponents test case', function () {
     $document = OpenApiParser::make()->parseArray($this->schema([

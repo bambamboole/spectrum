@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Objects\Parameter;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\OpenApiDocument;
+use App\Objects\Parameter;
+use App\OpenApiParser;
 
 it('can parse basic parameter in components', function () {
     $document = OpenApiParser::make()->parseArray([

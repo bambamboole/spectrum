@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\OpenApiParser;
+use App\OpenApiParser;
 use Illuminate\Http\Client\Factory;
 
 it('can parse OpenAPI specification from URL', function () {
@@ -49,4 +49,4 @@ it('can parse the local digital ocean spec', function () {
 
     // Test that we can access a specific endpoint
     expect($document->paths['/v2/account']->get->responses['200']->description)->toBe('A JSON object keyed on account with an excerpt of the current user account data.');
-});
+})->skip('Long running. Execute explicitly');

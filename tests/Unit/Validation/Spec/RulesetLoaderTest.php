@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Validation\Spec\RuleConfig;
-use Bambamboole\OpenApi\Validation\Spec\RulesetLoader;
-use Bambamboole\OpenApi\Validation\Spec\ValidationSeverity;
+use App\Validation\Spec\RuleConfig;
+use App\Validation\Spec\RulesetLoader;
+use App\Validation\Spec\ValidationSeverity;
 
 it('can discover rules with attributes', function () {
     $loader = new RulesetLoader;

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\OpenApiParser;
+use App\OpenApiParser;
 
 it('throws exception for invalid JSON', function () {
     expect(fn () => OpenApiParser::make()->parseJson('invalid json'))

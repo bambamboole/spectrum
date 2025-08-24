@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\RequestBody;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\RequestBody;
+use App\OpenApiParser;
 
 it('can parse minimal request body with content only', function () {
 

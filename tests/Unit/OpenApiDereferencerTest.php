@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\OpenApiDereferencer;
+use App\Exceptions\ReferenceResolutionException;
+use App\OpenApiDereferencer;
 
 it('can dereference external file references', function () {
     // Create a simple test case with external references
@@ -108,7 +109,7 @@ it('handles non-existent files gracefully', function () {
     $dereferencer = new OpenApiDereferencer;
 
     expect(fn () => $dereferencer->dereferenceFile('/non/existent/file.yaml'))
-        ->toThrow(\Bambamboole\OpenApi\Exceptions\ReferenceResolutionException::class, 'File not found');
+        ->toThrow(ReferenceResolutionException::class, 'File not found');
 });
 
 it('handles circular references gracefully', function () {

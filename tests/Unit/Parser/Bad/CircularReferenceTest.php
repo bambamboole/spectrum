@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Exceptions\ReferenceResolutionException;
+use App\Exceptions\ReferenceResolutionException;
 
 // TODO: Fix circular reference detection for property-level references
 // The current implementation can detect circular references at the resolver level,

@@ -1,11 +1,12 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Objects\Operation;
-use Bambamboole\OpenApi\Objects\PathItem;
+use App\Objects\OpenApiDocument;
+use App\Objects\Operation;
+use App\Objects\PathItem;
+use App\OpenApiParser;
 
 it('can parse complete OpenAPI document with paths and operations', function () {
-    $document = \Bambamboole\OpenApi\OpenApiParser::make()->parseArray($this->schema([
+    $document = OpenApiParser::make()->parseArray($this->schema([
         'openapi' => '3.0.3',
         'info' => [
             'title' => 'User Management API',

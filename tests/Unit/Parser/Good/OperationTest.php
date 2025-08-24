@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\Operation;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\Operation;
+use App\OpenApiParser;
 
 it('can parse minimal operation with responses only', function () {
     $operation = Operation::fromArray([

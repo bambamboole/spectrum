@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
-use Bambamboole\OpenApi\Exceptions\ParseException;
-use Bambamboole\OpenApi\Objects\MediaType;
+use App\Exceptions\ParseException;
+use App\Objects\MediaType;
 
 it('accepts media type with all fields empty or missing', function () {
 
     // MediaType with no fields should be valid
     $mediaType = MediaType::fromArray([]);
 
-    expect($mediaType)->toBeInstanceOf(\Bambamboole\OpenApi\Objects\MediaType::class);
+    expect($mediaType)->toBeInstanceOf(MediaType::class);
     expect($mediaType->schema)->toBeNull();
     expect($mediaType->example)->toBeNull();
     expect($mediaType->examples)->toBeNull();

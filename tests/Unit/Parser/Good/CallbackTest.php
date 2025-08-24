@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\Callback;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\Callback;
+use App\OpenApiParser;
 
 it('can parse minimal callback with single expression', function () {
 

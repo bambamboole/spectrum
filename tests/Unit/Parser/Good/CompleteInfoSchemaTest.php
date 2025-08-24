@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\OpenApiDocument;
+use App\OpenApiParser;
 
 it('can parse complete OpenAPI schema with full info section')
     ->expect(fn () => OpenApiParser::make()->parseArray($this->schema([

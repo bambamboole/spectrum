@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\OpenApiDereferencer;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\OpenApiDocument;
+use App\OpenApiDereferencer;
+use App\OpenApiParser;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Benchmark;

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\PathItem;
-use Bambamboole\OpenApi\OpenApiParser;
+use App\Objects\PathItem;
+use App\OpenApiParser;
 
 it('can parse minimal path item with single operation', function () {
     $pathItem = PathItem::fromArray([

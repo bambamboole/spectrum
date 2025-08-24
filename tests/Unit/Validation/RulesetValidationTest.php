@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Bambamboole\OpenApi\Objects\OpenApiDocument;
-use Bambamboole\OpenApi\Validation\Spec\ValidationSeverity;
-use Bambamboole\OpenApi\Validation\Validator;
+use App\Objects\OpenApiDocument;
+use App\Validation\Spec\ValidationSeverity;
+use App\Validation\Validator;
 
 it('can validate with ruleset array', function () {
     $document = OpenApiDocument::fromArray([
