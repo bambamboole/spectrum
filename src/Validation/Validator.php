@@ -19,6 +19,8 @@ class Validator
 {
     private static ?Factory $factory = null;
 
+    private static bool $skipValidation = false;
+
     public static function make(array $data, array $rules, array $messages = []): \Illuminate\Contracts\Validation\Validator
     {
         if (! self::$factory) {
@@ -32,6 +34,10 @@ class Validator
 
     public static function validate(array $data, array $rules, string $keyPrefix = ''): void
     {
+        if (self::$skipValidation) {
+            return;
+        }
+
         $validator = self::make($data, $rules);
 
         if ($validator->fails()) {
@@ -42,6 +48,21 @@ class Validator
 
             throw ParseException::withMessages($messages);
         }
+    }
+
+    public static function enablePerformanceMode(): void
+    {
+        self::$skipValidation = true;
+    }
+
+    public static function disablePerformanceMode(): void
+    {
+        self::$skipValidation = false;
+    }
+
+    public static function isPerformanceModeEnabled(): bool
+    {
+        return self::$skipValidation;
     }
 
     public static function validateDocument(OpenApiDocument $document, string|array $rules): ValidationResult

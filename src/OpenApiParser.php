@@ -3,6 +3,7 @@
 namespace Bambamboole\OpenApi;
 
 use Bambamboole\OpenApi\Objects\OpenApiDocument;
+use Bambamboole\OpenApi\Validation\Validator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Client\Factory;
 use InvalidArgumentException;
@@ -67,5 +68,24 @@ class OpenApiParser
         $dereferencedData = $dereferencer->dereferenceArray($data);
 
         return OpenApiDocument::fromArray($dereferencedData);
+    }
+
+    public function enablePerformanceMode(): self
+    {
+        Validator::enablePerformanceMode();
+
+        return $this;
+    }
+
+    public function disablePerformanceMode(): self
+    {
+        Validator::disablePerformanceMode();
+
+        return $this;
+    }
+
+    public function isPerformanceModeEnabled(): bool
+    {
+        return Validator::isPerformanceModeEnabled();
     }
 }
