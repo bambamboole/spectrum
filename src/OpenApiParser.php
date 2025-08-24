@@ -48,7 +48,7 @@ class OpenApiParser
         $dereferencer = new OpenApiDereferencer($this->fs, $this->http);
         $data = $dereferencer->dereferenceFile($filePath);
 
-        return $this->parseArray($data);
+        return OpenApiDocument::fromArray($data);
     }
 
     public function parseUrl(string $url): OpenApiDocument
@@ -57,12 +57,12 @@ class OpenApiParser
         $dereferencer = new OpenApiDereferencer($this->fs, $this->http);
         $data = $dereferencer->dereferenceUrl($url);
 
-        return $this->parseArray($data);
+        return OpenApiDocument::fromArray($data);
     }
 
     public function parseArray(array $data): OpenApiDocument
     {
-        // Use the dereferencer to resolve any internal references
+        // For in-memory parsing, only resolve internal references (no external files)
         $dereferencer = new OpenApiDereferencer($this->fs, $this->http);
         $dereferencedData = $dereferencer->dereferenceArray($data);
 

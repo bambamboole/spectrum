@@ -62,7 +62,7 @@ class OpenApiDereferencer
         $this->preserveSchemaDefinitions($document);
 
         // Second pass: dereference the document while preserving circular reference targets
-        $dereferencedDocument = $this->processValue($document, $baseDirectory, $document);
+        $dereferencedDocument = $this->processValue($document, $baseDirectory, $document, $document);
 
         // Third pass: ensure circular reference targets are available in the final document
         return $this->ensureCircularTargetsAvailable($dereferencedDocument);
@@ -70,22 +70,11 @@ class OpenApiDereferencer
 
     private function ensureCircularTargetsAvailable(array $document): array
     {
-        // Collect all remaining $ref values to see what targets we need
-        $serialized = json_encode($document);
-        preg_match_all('/"\\$ref":"([^"]+)"/', $serialized, $allRefs);
-        preg_match_all('/"\\$ref":"#\\\\\\/([^"]+)"/', $serialized, $localRefs);
-        $neededTargets = isset($localRefs[1]) ? array_unique($localRefs[1]) : [];
-
-        // Debug: Show what we collected and what we need (remove in production)
-        // $refCount = substr_count($serialized, '"$ref"');
-        // echo "Total \$ref count: $refCount\n";
-
-        foreach ($neededTargets as $target) {
-            if (isset($this->schemaDefinitions[$target])) {
-                // Add the schema definition to the document structure where it can be found
-                if (! isset($document[$target])) {
-                    $document[$target] = $this->schemaDefinitions[$target];
-                }
+        // For complex specifications like DigitalOcean, preserve ALL schema definitions
+        // from external files to ensure they're available for any internal references
+        foreach ($this->schemaDefinitions as $name => $definition) {
+            if (! isset($document[$name])) {
+                $document[$name] = $definition;
             }
         }
 
@@ -120,15 +109,18 @@ class OpenApiDereferencer
                isset($value['$ref']);
     }
 
-    private function processValue($value, string $baseDirectory, array $rootDocument)
+    private function processValue($value, string $baseDirectory, array $rootDocument, ?array $currentDocument = null)
     {
         if (! is_array($value)) {
             return $value;
         }
 
+        // Use current document context if provided, otherwise use root document
+        $contextDocument = $currentDocument ?? $rootDocument;
+
         // Handle $ref
         if (isset($value['$ref'])) {
-            $resolved = $this->resolveReference($value['$ref'], $baseDirectory, $rootDocument);
+            $resolved = $this->resolveReference($value['$ref'], $baseDirectory, $rootDocument, $contextDocument);
 
             // If the resolution returned a $ref (due to circular reference), don't process it further
             if (is_array($resolved) && isset($resolved['$ref']) && count($resolved) === 1) {
@@ -141,13 +133,13 @@ class OpenApiDereferencer
         // Process all array elements recursively
         $result = [];
         foreach ($value as $key => $item) {
-            $result[$key] = $this->processValue($item, $baseDirectory, $rootDocument);
+            $result[$key] = $this->processValue($item, $baseDirectory, $rootDocument, $contextDocument);
         }
 
         return $result;
     }
 
-    private function resolveReference(string $ref, string $baseDirectory, array $rootDocument)
+    private function resolveReference(string $ref, string $baseDirectory, array $rootDocument, array $currentDocument)
     {
         // Handle local JSON pointer references
         if (str_starts_with($ref, '#/')) {
@@ -164,9 +156,10 @@ class OpenApiDereferencer
             $this->resolutionStack[] = $referenceKey;
 
             try {
-                $referencedValue = $this->getJsonPointerValue($rootDocument, $jsonPointer);
+                // Use current document for local references instead of root document
+                $referencedValue = $this->getJsonPointerValue($currentDocument, $jsonPointer);
 
-                return $this->processValue($referencedValue, $baseDirectory, $rootDocument);
+                return $this->processValue($referencedValue, $baseDirectory, $rootDocument, $currentDocument);
             } finally {
                 array_pop($this->resolutionStack);
             }
@@ -193,8 +186,8 @@ class OpenApiDereferencer
             // Get the referenced value
             $referencedValue = $this->getJsonPointerValue($externalDocument, $jsonPointer);
 
-            // Recursively dereference the referenced value with the new base directory and external document as root
-            $result = $this->processValue($referencedValue, dirname($resolvedPath), $externalDocument);
+            // Recursively dereference the referenced value with the new base directory and external document as context
+            $result = $this->processValue($referencedValue, dirname($resolvedPath), $externalDocument, $externalDocument);
 
             return $result;
         } finally {
