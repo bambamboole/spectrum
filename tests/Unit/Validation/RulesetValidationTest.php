@@ -27,7 +27,7 @@ it('can validate with ruleset array', function () {
         ],
     ];
 
-    $result = Validator::validateWithRulesetArray($document, $ruleset);
+    $result = Validator::validateWithRuleset($document, $ruleset);
 
     expect($result->hasWarnings())->toBeTrue();
     expect($result->getWarnings())->toHaveCount(1);

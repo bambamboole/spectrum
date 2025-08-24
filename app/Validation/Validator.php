@@ -9,29 +9,11 @@ use App\Validation\Spec\RulesetLoader;
 use App\Validation\Spec\ValidationError;
 use App\Validation\Spec\ValidationResult;
 use App\Validation\Spec\ValidationSeverity;
-use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
-use Illuminate\Translation\FileLoader;
-use Illuminate\Translation\Translator;
-use Illuminate\Validation\Factory;
 
 class Validator
 {
-    private static ?Factory $factory = null;
-
     private static bool $skipValidation = false;
-
-    public static function make(array $data, array $rules, array $messages = []): \Illuminate\Contracts\Validation\Validator
-    {
-        if (! self::$factory) {
-            $loader = new FileLoader(new Filesystem, dirname(__DIR__, 2).'/lang');
-            $translator = new Translator($loader, 'en');
-            self::$factory = new Factory($translator, new Container);
-        }
-
-        return self::$factory->make($data, $rules, $messages);
-    }
 
     public static function validate(array $data, array $rules, string $keyPrefix = ''): void
     {
@@ -39,7 +21,7 @@ class Validator
             return;
         }
 
-        $validator = self::make($data, $rules);
+        $validator = app('validator')->make($data, $rules);
 
         if ($validator->fails()) {
             $prefix = empty($keyPrefix) ? '' : "{$keyPrefix}.";
@@ -88,20 +70,15 @@ class Validator
         return $result;
     }
 
-    public static function validateWithRuleset(OpenApiDocument $document, string $rulesetPath): ValidationResult
+    public static function validateWithRuleset(OpenApiDocument $document, string|array $rulesetPath): ValidationResult
     {
         $loader = new RulesetLoader;
-        $ruleConfigs = $loader->loadFromFile($rulesetPath);
 
-        return self::validateDocument($document, $ruleConfigs);
-    }
+        $ruleConfig = is_string($rulesetPath)
+            ? $loader->loadFromFile($rulesetPath)
+            : $loader->loadFromArray($rulesetPath);
 
-    public static function validateWithRulesetArray(OpenApiDocument $document, array $rulesetData): ValidationResult
-    {
-        $loader = new RulesetLoader;
-        $ruleConfigs = $loader->loadFromArray($rulesetData);
-
-        return self::validateDocument($document, $ruleConfigs);
+        return self::validateDocument($document, $ruleConfig);
     }
 
     public static function getAvailableRules(): array

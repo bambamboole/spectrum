@@ -19,6 +19,7 @@ class DereferenceCommand extends Command
                             {--output= : Output file path (default: stdout)}';
 
     protected $aliases = ['deref'];
+
     /**
      * The console command description.
      *

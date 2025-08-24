@@ -54,7 +54,9 @@ return [
     */
 
     'providers' => [
-        App\Providers\AppServiceProvider::class,
+        \App\Providers\AppServiceProvider::class,
+        \Illuminate\Translation\TranslationServiceProvider::class,
+        \Illuminate\Validation\ValidationServiceProvider::class,
     ],
 
 ];
