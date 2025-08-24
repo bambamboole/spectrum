@@ -53,6 +53,10 @@ readonly class Schema extends OpenApiObject
             'anyOf' => ['sometimes', 'array', 'min:1'],
             'oneOf' => ['sometimes', 'array', 'min:1'],
             'not' => ['sometimes', 'array'],
+
+            // OpenAPI-specific extensions
+            'discriminator' => ['sometimes', 'array'],
+            'xml' => ['sometimes', 'array'],
         ];
     }
 
@@ -86,6 +90,8 @@ readonly class Schema extends OpenApiObject
         public ?array $oneOf = null,
         public ?Schema $not = null,
         public ?string $ref = null,
+        public ?Discriminator $discriminator = null,
+        public ?XML $xml = null,
         /** @var array<string, mixed> Specification extensions (x-* properties) */
         public array $x = [],
     ) {}
@@ -124,6 +130,8 @@ readonly class Schema extends OpenApiObject
             oneOf: self::createSchemaArray($data['oneOf'] ?? null),
             not: isset($data['not']) ? self::fromArray($data['not']) : null, // Will be set by ObjectFactory
             ref: $data['$ref'] ?? null,
+            discriminator: isset($data['discriminator']) ? Discriminator::fromArray($data['discriminator'], $keyPrefix.'.discriminator') : null,
+            xml: isset($data['xml']) ? XML::fromArray($data['xml'], $keyPrefix.'.xml') : null,
             x: self::extractX($data),
         );
     }

@@ -164,8 +164,8 @@ it('can parse media type with encoding', function () {
     expect($mediaType->schema->type)->toBe('object');
     expect($mediaType->encoding)->toHaveKey('file');
     expect($mediaType->encoding)->toHaveKey('metadata');
-    expect($mediaType->encoding['file']['contentType'])->toBe('image/png, image/jpeg');
-    expect($mediaType->encoding['metadata']['contentType'])->toBe('application/json');
+    expect($mediaType->encoding['file']->contentType)->toBe('image/png, image/jpeg');
+    expect($mediaType->encoding['metadata']->contentType)->toBe('application/json');
 });
 
 it('can parse minimal media type with no schema', function () {

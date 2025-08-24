@@ -75,7 +75,7 @@ it('accepts media type with encoding for multipart content', function () {
     expect($mediaType->encoding)->toBeArray();
     expect($mediaType->encoding)->toHaveKey('file');
     expect($mediaType->encoding)->toHaveKey('description');
-    expect($mediaType->encoding['file']['contentType'])->toBe('application/octet-stream');
+    expect($mediaType->encoding['file']->contentType)->toBe('application/octet-stream');
 });
 
 it('handles media type with complex nested schema', function () {

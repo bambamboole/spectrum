@@ -23,6 +23,7 @@ readonly class Components extends OpenApiObject
             'securitySchemes' => ['sometimes', 'array'],
             'links' => ['sometimes', 'array'],
             'callbacks' => ['sometimes', 'array'],
+            'pathItems' => ['sometimes', 'array'],
         ];
     }
 
@@ -45,6 +46,8 @@ readonly class Components extends OpenApiObject
         public array $links = [],
         /** @var Callback[] */
         public array $callbacks = [],
+        /** @var PathItem[] */
+        public array $pathItems = [],
         /** @var array<string, mixed> Specification extensions (x-* properties) */
         public array $x = [],
     ) {}
@@ -63,6 +66,7 @@ readonly class Components extends OpenApiObject
             securitySchemes: SecurityScheme::multiple($data['securitySchemes'] ?? [], 'components.securitySchemes'),
             links: Link::multiple($data['links'] ?? [], 'components.links'),
             callbacks: Callback::multiple($data['callbacks'] ?? [], 'components.callbacks'),
+            pathItems: PathItem::multiple($data['pathItems'] ?? [], 'components.pathItems'),
             x: self::extractX($data),
         );
     }

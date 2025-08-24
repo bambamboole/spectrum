@@ -336,5 +336,5 @@ it('can parse file upload request body with encoding', function () {
     expect($requestBody->content['multipart/form-data']->schema->properties)->toHaveKey('file');
     expect($requestBody->content['multipart/form-data']->schema->properties['file']->format)->toBe('binary');
     expect($requestBody->content['multipart/form-data']->encoding)->toHaveKey('file');
-    expect($requestBody->content['multipart/form-data']->encoding['file']['contentType'])->toBe('image/*');
+    expect($requestBody->content['multipart/form-data']->encoding['file']->contentType)->toBe('image/*');
 });

@@ -24,7 +24,9 @@ readonly class MediaType extends OpenApiObject
     public function __construct(
         public ?Schema $schema = null,
         public mixed $example = null,
+        /** @var array<string, Example>|null */
         public ?array $examples = null,
+        /** @var array<string, Encoding>|null */
         public ?array $encoding = null,
         /** @var array<string, mixed> Specification extensions (x-* properties) */
         public array $x = [],
@@ -38,7 +40,7 @@ readonly class MediaType extends OpenApiObject
             schema: isset($data['schema']) ? Schema::fromArray($data['schema'], $keyPrefix.'.schema') : null,
             example: $data['example'] ?? null,
             examples: isset($data['examples']) ? Example::multiple($data['examples'], $keyPrefix.'.examples') : null,
-            encoding: $data['encoding'] ?? null,
+            encoding: isset($data['encoding']) ? Encoding::multiple($data['encoding'], $keyPrefix.'.encoding') : null,
             x: self::extractX($data),
         );
     }

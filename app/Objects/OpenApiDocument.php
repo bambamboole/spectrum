@@ -12,6 +12,7 @@ readonly class OpenApiDocument extends OpenApiObject
         return [
             'openapi' => ['required', 'string', new Semver('3.0.0')],
             'paths' => ['present', 'array'],
+            'webhooks' => ['sometimes', 'array'],
         ];
     }
 
@@ -28,6 +29,7 @@ readonly class OpenApiDocument extends OpenApiObject
         /** @var Server[] */
         public array $servers = [],
         public ?ExternalDocs $externalDocs = null,
+        public ?Webhooks $webhooks = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -40,6 +42,7 @@ readonly class OpenApiDocument extends OpenApiObject
         $servers = Server::multiple($data['servers'] ?? [], 'servers');
         $tags = Tag::multiple($data['tags'] ?? [], 'tags');
         $externalDocs = isset($data['externalDocs']) ? ExternalDocs::fromArray($data['externalDocs']) : null;
+        $webhooks = isset($data['webhooks']) ? Webhooks::fromArray($data['webhooks'], 'webhooks') : null;
 
         return new OpenApiDocument(
             openapi: $data['openapi'],
@@ -50,6 +53,7 @@ readonly class OpenApiDocument extends OpenApiObject
             tags: $tags,
             servers: $servers,
             externalDocs: $externalDocs,
+            webhooks: $webhooks,
         );
     }
 }
