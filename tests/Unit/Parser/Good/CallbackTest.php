@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\Callback;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal callback with single expression', function () {
 
@@ -273,10 +273,26 @@ it('can parse callback with runtime expressions for headers and query parameters
 });
 
 it('can parse callback reference', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/webhooks' => [
+                'post' => [
+                    'callbacks' => [
+                        'myCallback' => [
+                            '$ref' => '#/components/callbacks/WebhookCallback',
+                        ],
+                    ],
+                    'responses' => [
+                        '200' => ['description' => 'Success'],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'callbacks' => [
                 'WebhookCallback' => [
@@ -293,12 +309,8 @@ it('can parse callback reference', function () {
         ],
     ]);
 
-    $callback = Callback::fromArray([
-        '$ref' => '#/components/callbacks/WebhookCallback',
-    ]);
+    $callback = $document->paths['/webhooks']->post->callbacks['myCallback'];
 
     expect($callback->expressions)->toHaveKey('{$request.body#/webhookUrl}');
     expect($callback->expressions['{$request.body#/webhookUrl}']['post']['description'])->toBe('Referenced webhook callback');
-
-    ReferenceResolver::clear();
 });

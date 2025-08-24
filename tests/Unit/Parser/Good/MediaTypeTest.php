@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\MediaType;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse basic media type with schema', function () {
     $mediaType = MediaType::fromArray([
@@ -57,8 +57,8 @@ it('can parse media type with multiple examples', function () {
     expect($mediaType->schema->type)->toBe('object');
     expect($mediaType->examples)->toHaveKey('success');
     expect($mediaType->examples)->toHaveKey('error');
-    expect($mediaType->examples['success']['summary'])->toBe('Success response');
-    expect($mediaType->examples['success']['value']['message'])->toBe('Operation completed successfully');
+    expect($mediaType->examples['success']->summary)->toBe('Success response');
+    expect($mediaType->examples['success']->value['message'])->toBe('Operation completed successfully');
 });
 
 it('can parse media type with complex schema', function () {
@@ -180,10 +180,31 @@ it('can parse minimal media type with no schema', function () {
 });
 
 it('can parse media type with schema reference', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/users' => [
+                'post' => [
+                    'requestBody' => [
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    '$ref' => '#/components/schemas/User',
+                                ],
+                                'example' => ['id' => 1, 'name' => 'John Doe'],
+                            ],
+                        ],
+                    ],
+                    'responses' => [
+                        '201' => ['description' => 'Created'],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'schemas' => [
                 'User' => [
@@ -197,18 +218,11 @@ it('can parse media type with schema reference', function () {
         ],
     ]);
 
-    $mediaType = MediaType::fromArray([
-        'schema' => [
-            '$ref' => '#/components/schemas/User',
-        ],
-        'example' => ['id' => 1, 'name' => 'John Doe'],
-    ]);
+    $mediaType = $document->paths['/users']->post->requestBody->content['application/json'];
 
     expect($mediaType->schema->type)->toBe('object');
     expect($mediaType->schema->properties)->toHaveKey('id');
     expect($mediaType->schema->properties)->toHaveKey('name');
     expect($mediaType->example['id'])->toBe(1);
     expect($mediaType->example['name'])->toBe('John Doe');
-
-    ReferenceResolver::clear();
 });

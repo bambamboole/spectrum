@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\PathItem;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal path item with single operation', function () {
     $pathItem = PathItem::fromArray([
@@ -327,10 +327,24 @@ it('can parse multiple path items', function () {
 });
 
 it('can parse path item with reference resolution', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/users/{userId}' => [
+                'parameters' => [
+                    ['$ref' => '#/components/parameters/UserIdParam'],
+                ],
+                'get' => [
+                    'responses' => [
+                        '200' => ['description' => 'Success'],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'parameters' => [
                 'UserIdParam' => [
@@ -343,23 +357,12 @@ it('can parse path item with reference resolution', function () {
         ],
     ]);
 
-    $pathItem = PathItem::fromArray([
-        'parameters' => [
-            ['$ref' => '#/components/parameters/UserIdParam'],
-        ],
-        'get' => [
-            'responses' => [
-                '200' => ['description' => 'Success'],
-            ],
-        ],
-    ]);
+    $pathItem = $document->paths['/users/{userId}'];
 
     expect($pathItem->parameters)->toHaveCount(1);
     expect($pathItem->parameters[0]->name)->toBe('userId');
     expect($pathItem->parameters[0]->in)->toBe('path');
     expect($pathItem->parameters[0]->required)->toBeTrue();
-
-    ReferenceResolver::clear();
 });
 
 it('getOperations returns only defined operations', function () {

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\RequestBody;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal request body with content only', function () {
 
@@ -173,14 +173,38 @@ it('can parse request body with complex nested schema', function () {
     expect($requestBody->content['application/json']->schema->properties['items']->type)->toBe('array');
     expect($requestBody->content['application/json']->schema->properties['items']->items->properties)->toHaveKey('productId');
     expect($requestBody->content['application/json']->examples)->toHaveKey('simple_order');
-    expect($requestBody->content['application/json']->examples['simple_order']['value']['customer']['id'])->toBe(123);
+    expect($requestBody->content['application/json']->examples['simple_order']->value['customer']['id'])->toBe(123);
 });
 
 it('can parse request body with schema reference', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/users' => [
+                'post' => [
+                    'requestBody' => [
+                        'description' => 'User creation data using schema reference',
+                        'required' => true,
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    '$ref' => '#/components/schemas/CreateUserRequest',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'responses' => [
+                        '201' => [
+                            'description' => 'User created',
+                        ],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'schemas' => [
                 'CreateUserRequest' => [
@@ -196,25 +220,13 @@ it('can parse request body with schema reference', function () {
         ],
     ]);
 
-    $requestBody = RequestBody::fromArray([
-        'description' => 'User creation data using schema reference',
-        'required' => true,
-        'content' => [
-            'application/json' => [
-                'schema' => [
-                    '$ref' => '#/components/schemas/CreateUserRequest',
-                ],
-            ],
-        ],
-    ]);
+    $requestBody = $document->paths['/users']->post->requestBody;
 
     expect($requestBody->description)->toBe('User creation data using schema reference');
     expect($requestBody->content['application/json']->schema->type)->toBe('object');
     expect($requestBody->content['application/json']->schema->properties)->toHaveKey('username');
     expect($requestBody->content['application/json']->schema->properties)->toHaveKey('password');
     expect($requestBody->content['application/json']->schema->properties['username']->minLength)->toBe(3);
-
-    ReferenceResolver::clear();
 });
 
 it('can parse multiple request bodies in components', function () {

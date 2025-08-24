@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\Response;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal response with description only', function () {
     $response = Response::fromArray([
@@ -124,10 +124,30 @@ it('can parse response with all properties', function () {
 });
 
 it('can parse response with schema reference', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/users/{id}' => [
+                'get' => [
+                    'responses' => [
+                        '200' => [
+                            'description' => 'User response using schema reference',
+                            'content' => [
+                                'application/json' => [
+                                    'schema' => [
+                                        '$ref' => '#/components/schemas/User',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'schemas' => [
                 'User' => [
@@ -141,23 +161,12 @@ it('can parse response with schema reference', function () {
         ],
     ]);
 
-    $response = Response::fromArray([
-        'description' => 'User response using schema reference',
-        'content' => [
-            'application/json' => [
-                'schema' => [
-                    '$ref' => '#/components/schemas/User',
-                ],
-            ],
-        ],
-    ]);
+    $response = $document->paths['/users/{id}']->get->responses['200'];
 
     expect($response->description)->toBe('User response using schema reference');
     expect($response->content['application/json']->schema->type)->toBe('object');
     expect($response->content['application/json']->schema->properties)->toHaveKey('id');
     expect($response->content['application/json']->schema->properties)->toHaveKey('name');
-
-    ReferenceResolver::clear();
 });
 
 it('can parse multiple responses in components', function () {
@@ -272,5 +281,5 @@ it('can parse response with complex nested content structure', function () {
     expect($response->content['application/json']->schema->properties['data']->items->properties)->toHaveKey('id');
     expect($response->content['application/json']->schema->properties['meta']->properties)->toHaveKey('pagination');
     expect($response->content['application/json']->examples)->toHaveKey('users_page');
-    expect($response->content['application/json']->examples['users_page']['value']['data'][0]['id'])->toBe(1);
+    expect($response->content['application/json']->examples['users_page']->value['data'][0]['id'])->toBe(1);
 });

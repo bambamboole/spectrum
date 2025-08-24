@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\Operation;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal operation with responses only', function () {
     $operation = Operation::fromArray([
@@ -298,10 +298,24 @@ it('can parse operation with all features combined', function () {
 });
 
 it('can parse operation with reference resolution', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/users/{userId}' => [
+                'get' => [
+                    'parameters' => [
+                        ['$ref' => '#/components/parameters/UserIdParam'],
+                    ],
+                    'responses' => [
+                        '200' => ['$ref' => '#/components/responses/UserResponse'],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'parameters' => [
                 'UserIdParam' => [
@@ -324,20 +338,11 @@ it('can parse operation with reference resolution', function () {
         ],
     ]);
 
-    $operation = Operation::fromArray([
-        'parameters' => [
-            ['$ref' => '#/components/parameters/UserIdParam'],
-        ],
-        'responses' => [
-            '200' => ['$ref' => '#/components/responses/UserResponse'],
-        ],
-    ]);
+    $operation = $document->paths['/users/{userId}']->get;
 
     expect($operation->parameters)->toHaveCount(1);
     expect($operation->parameters[0]->name)->toBe('userId');
     expect($operation->parameters[0]->in)->toBe('path');
     expect($operation->responses)->toHaveCount(1);
     expect($operation->responses['200']->description)->toBe('User information');
-
-    ReferenceResolver::clear();
 });

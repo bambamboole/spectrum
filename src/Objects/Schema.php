@@ -2,7 +2,6 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\ReferenceResolver;
 use Bambamboole\OpenApi\Validation\Validator;
 
 /**
@@ -23,19 +22,19 @@ readonly class Schema extends OpenApiObject
 
             // String constraints
             'minLength' => ['sometimes', 'integer', 'min:0'],
-            'maxLength' => ['sometimes', 'integer', 'min:0', 'gte:minLength'],
+            'maxLength' => ['sometimes', 'integer', 'min:0'],
             'pattern' => ['sometimes', 'string', 'filled'],
 
             // Numeric constraints
             'minimum' => ['sometimes', 'numeric'],
-            'maximum' => ['sometimes', 'numeric', 'gte:minimum'],
+            'maximum' => ['sometimes', 'numeric'],
             'exclusiveMinimum' => ['sometimes', 'boolean'],
             'exclusiveMaximum' => ['sometimes', 'boolean'],
             'multipleOf' => ['sometimes', 'numeric', 'gt:0'],
 
             // Array constraints
             'minItems' => ['sometimes', 'integer', 'min:0'],
-            'maxItems' => ['sometimes', 'integer', 'min:0', 'gte:minItems'],
+            'maxItems' => ['sometimes', 'integer', 'min:0'],
             'uniqueItems' => ['sometimes', 'boolean'],
             'items' => ['sometimes', 'array'],
 
@@ -67,8 +66,8 @@ readonly class Schema extends OpenApiObject
         public ?int $minLength = null,
         public ?int $maxLength = null,
         public ?string $pattern = null,
-        public int|float|null $minimum = null,
-        public int|float|null $maximum = null,
+        public int|float|string|null $minimum = null,
+        public int|float|string|null $maximum = null,
         public ?bool $exclusiveMinimum = null,
         public ?bool $exclusiveMaximum = null,
         public int|float|null $multipleOf = null,
@@ -93,7 +92,6 @@ readonly class Schema extends OpenApiObject
 
     public static function fromArray(array $data, string $keyPrefix = ''): self
     {
-        $data = ReferenceResolver::resolveRef($data);
         Validator::validate($data, self::rules(), $keyPrefix);
 
         return new self(

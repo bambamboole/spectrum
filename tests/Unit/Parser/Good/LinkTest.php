@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\Link;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal link with operationRef only', function () {
 
@@ -193,10 +193,28 @@ it('can parse link with server variables', function () {
 });
 
 it('can parse link reference', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/users' => [
+                'post' => [
+                    'responses' => [
+                        '201' => [
+                            'description' => 'User created',
+                            'links' => [
+                                'GetUserById' => [
+                                    '$ref' => '#/components/links/GetUserById',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'links' => [
                 'GetUserById' => [
@@ -210,14 +228,10 @@ it('can parse link reference', function () {
         ],
     ]);
 
-    $link = Link::fromArray([
-        '$ref' => '#/components/links/GetUserById',
-    ]);
+    $link = $document->paths['/users']->post->responses['201']->links['GetUserById'];
 
     expect($link->operationId)->toBe('getUserById');
     expect($link->parameters)->toHaveKey('userId');
     expect($link->parameters['userId'])->toBe('$response.body#/id');
     expect($link->description)->toBe('Get user by ID from response');
-
-    ReferenceResolver::clear();
 });

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 use Bambamboole\OpenApi\Objects\Example;
-use Bambamboole\OpenApi\ReferenceResolver;
+use Bambamboole\OpenApi\OpenApiParser;
 
 it('can parse minimal example with value only', function () {
 
@@ -234,10 +234,32 @@ it('can parse example with complex nested objects and arrays', function () {
 });
 
 it('can parse example reference', function () {
-    ReferenceResolver::initialize([
+    $document = OpenApiParser::make()->parseArray([
         'openapi' => '3.0.0',
-        'info' => [],
-        'paths' => [],
+        'info' => [
+            'title' => 'Test API',
+            'version' => '1.0.0',
+        ],
+        'paths' => [
+            '/users' => [
+                'get' => [
+                    'responses' => [
+                        '200' => [
+                            'description' => 'Success',
+                            'content' => [
+                                'application/json' => [
+                                    'examples' => [
+                                        'userExample' => [
+                                            '$ref' => '#/components/examples/UserExample',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
         'components' => [
             'examples' => [
                 'UserExample' => [
@@ -253,9 +275,7 @@ it('can parse example reference', function () {
         ],
     ]);
 
-    $example = Example::fromArray([
-        '$ref' => '#/components/examples/UserExample',
-    ]);
+    $example = $document->paths['/users']->get->responses['200']->content['application/json']->examples['userExample'];
 
     expect($example->summary)->toBe('Sample user');
     expect($example->description)->toBe('A typical user in our system');
@@ -263,6 +283,4 @@ it('can parse example reference', function () {
     expect($example->value)->toHaveKey('username');
     expect($example->value['id'])->toBe(42);
     expect($example->value['username'])->toBe('sample_user');
-
-    ReferenceResolver::clear();
 });

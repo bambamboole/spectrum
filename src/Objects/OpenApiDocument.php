@@ -2,7 +2,6 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\ReferenceResolver;
 use Bambamboole\OpenApi\Validation\Rules\Semver;
 use Bambamboole\OpenApi\Validation\Validator;
 
@@ -33,31 +32,24 @@ readonly class OpenApiDocument extends OpenApiObject
 
     public static function fromArray(array $data): self
     {
-        ReferenceResolver::initialize($data);
+        Validator::validate($data, self::rules());
 
-        try {
-            $data = ReferenceResolver::resolveRef($data);
-            Validator::validate($data, self::rules());
+        $info = Info::fromArray($data['info'], 'info');
+        $components = Components::fromArray($data['components'] ?? [], 'components');
+        $security = Security::multiple($data['security'] ?? [], 'security');
+        $servers = Server::multiple($data['servers'] ?? [], 'servers');
+        $tags = Tag::multiple($data['tags'] ?? [], 'tags');
+        $externalDocs = isset($data['externalDocs']) ? ExternalDocs::fromArray($data['externalDocs']) : null;
 
-            $info = Info::fromArray($data['info'], 'info');
-            $components = Components::fromArray($data['components'] ?? [], 'components');
-            $security = Security::multiple($data['security'] ?? [], 'security');
-            $servers = Server::multiple($data['servers'] ?? [], 'servers');
-            $tags = Tag::multiple($data['tags'] ?? [], 'tags');
-            $externalDocs = isset($data['externalDocs']) ? ExternalDocs::fromArray($data['externalDocs']) : null;
-
-            return new OpenApiDocument(
-                openapi: $data['openapi'],
-                info: $info,
-                paths: PathItem::multiple($data['paths'], 'paths'),
-                components: $components,
-                security: $security,
-                tags: $tags,
-                servers: $servers,
-                externalDocs: $externalDocs,
-            );
-        } finally {
-            ReferenceResolver::clear();
-        }
+        return new OpenApiDocument(
+            openapi: $data['openapi'],
+            info: $info,
+            paths: PathItem::multiple($data['paths'], 'paths'),
+            components: $components,
+            security: $security,
+            tags: $tags,
+            servers: $servers,
+            externalDocs: $externalDocs,
+        );
     }
 }

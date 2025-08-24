@@ -2,7 +2,6 @@
 
 namespace Bambamboole\OpenApi\Objects;
 
-use Bambamboole\OpenApi\ReferenceResolver;
 use Bambamboole\OpenApi\Validation\Validator;
 
 /**
@@ -30,7 +29,6 @@ readonly class Tag extends OpenApiObject
 
     public static function fromArray(array $data, string $keyPrefix = ''): self
     {
-        $data = ReferenceResolver::resolveRef($data);
         Validator::validate($data, self::rules(), $keyPrefix);
 
         return new self(

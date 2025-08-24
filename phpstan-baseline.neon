@@ -1,7 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Unsafe usage of new static\(\)\.$#'
-			identifier: new.static
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
 			count: 1
-			path: src/Factories/AbstractFactory.php
+			path: src/OpenApiDereferencer.php

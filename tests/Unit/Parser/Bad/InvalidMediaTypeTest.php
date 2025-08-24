@@ -48,7 +48,7 @@ it('accepts media type with valid examples array', function () {
 
     expect($mediaType->examples)->toBeArray();
     expect($mediaType->examples)->toHaveCount(2);
-    expect($mediaType->examples['example1']['value'])->toBe('Hello World');
+    expect($mediaType->examples['example1']->value)->toBe('Hello World');
 });
 
 it('accepts media type with encoding for multipart content', function () {
@@ -124,7 +124,7 @@ it('handles media type with complex nested schema', function () {
 
     expect($mediaType->schema->properties['data']->oneOf)->toHaveCount(2);
     expect($mediaType->examples)->toHaveCount(2);
-    expect($mediaType->examples['user_example']['value']['data']['user']['name'])->toBe('John');
+    expect($mediaType->examples['user_example']->value['data']['user']['name'])->toBe('John');
 });
 
 it('handles media type with various example types', function () {

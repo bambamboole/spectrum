@@ -16,7 +16,6 @@ readonly class Info extends OpenApiObject
         return [
             'title' => ['required', 'string', 'filled'],
             'version' => ['required', 'string', 'filled'],
-            'description' => ['sometimes', 'string', 'filled'],
             'termsOfService' => ['sometimes', 'url'],
         ];
     }
@@ -38,10 +37,16 @@ readonly class Info extends OpenApiObject
         $contact = isset($data['contact']) ? Contact::fromArray($data['contact'], $keyPrefix.'.contact') : null;
         $license = isset($data['license']) ? License::fromArray($data['license'], $keyPrefix.'.license') : null;
 
+        if (isset($data['description'])) {
+            $description = is_string($data['description']) ? $data['description'] : json_encode($data['description']);
+        } else {
+            $description = null;
+        }
+
         return new Info(
             title: $data['title'],
             version: $data['version'],
-            description: $data['description'] ?? null,
+            description: $description,
             termsOfService: $data['termsOfService'] ?? null,
             contact: $contact,
             license: $license,

@@ -26,6 +26,6 @@ it('detects invalid references (placeholder for circular reference test)', funct
             ],
         ],
     ])->toThrow(function (ReferenceResolutionException $e) {
-        expect($e->getMessage())->toContain('Reference path not found');
+        expect($e->getMessage())->toContain('JSON pointer path not found');
     });
 });
